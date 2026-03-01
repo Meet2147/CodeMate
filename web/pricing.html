@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>CodeMate Pricing</title>
+    <link rel="stylesheet" href="./pricing.css?v=20260228m" />
+  </head>
+  <body>
+    <div class="page-bg"></div>
+    <main class="pricing-page">
+      <header class="topbar glass">
+        <a class="brand" href="./index.html">CodeMate</a>
+        <div class="top-actions">
+          <a href="./dsa.html">DSA Track</a>
+          <a href="./app.html">Workspace</a>
+          <a href="./profile.html">Profile</a>
+          <button id="loginBtn">Login with GitHub</button>
+        </div>
+      </header>
+
+      <section class="pricing-hero glass">
+        <p class="eyebrow">Simple Pricing</p>
+        <h1>Start free for 7 days. Upgrade only if you love it.</h1>
+        <p>
+          No charge today. Your trial includes the full experience. After 7 days, continue on the
+          plan that matches your pairing style.
+        </p>
+        <p id="authStatus">Not signed in</p>
+      </section>
+
+      <section class="controls glass">
+        <div class="segment" role="tablist" aria-label="Plan Type">
+          <button id="proTab" class="active" type="button">Pro</button>
+          <button id="premiumTab" type="button">Premium</button>
+        </div>
+
+        <fieldset class="billing-cycle">
+          <legend>Billing Cycle</legend>
+          <label>
+            <input type="radio" name="billing" value="monthly" checked />
+            Monthly
+          </label>
+          <label>
+            <input type="radio" name="billing" value="yearly" />
+            Yearly
+          </label>
+        </fieldset>
+      </section>
+
+      <section class="cards">
+        <article class="main-card glass">
+          <div class="plan-head">
+            <h2 id="planTitle">Pro Monthly</h2>
+            <p id="planPrice" class="price">$29.99</p>
+          </div>
+          <p id="planLocalPrice" class="local-price">INR 2,799</p>
+          <ul id="planFeatures"></ul>
+          <button id="checkoutBtn">Start 7-Day Free Trial</button>
+          <p class="checkout-note" id="checkoutNote">
+            No payment charged today. After trial, pay securely with PayPal (USD).
+          </p>
+        </article>
+
+        <article class="side-card glass">
+          <p class="badge">One-time</p>
+          <h3>Lifetime</h3>
+          <p class="price">$499</p>
+          <p class="local-price">INR 45,000</p>
+          <p>2 people at a time</p>
+          <p>Unlimited sessions</p>
+          <button id="lifetimeCheckoutBtn">Unlock Lifetime</button>
+        </article>
+      </section>
+    </main>
+    <script src="./config.js?v=20260301a"></script>
+    <script src="./pricing.js?v=20260228e" type="module"></script>
+  </body>
+</html>

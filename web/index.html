@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>CodeMate - Pair Coding, Video, and Live Run</title>
+    <link rel="stylesheet" href="./styles.css?v=20260228m" />
+  </head>
+  <body>
+    <div class="page-bg"></div>
+    <main class="landing-shell">
+      <header class="topbar glass">
+        <a class="brand" href="./index.html">CodeMate</a>
+        <nav>
+          <a href="./pricing.html">Pricing</a>
+          <a href="./dsa.html">DSA Track</a>
+          <a href="./app.html">Workspace</a>
+          <a href="./profile.html">Profile</a>
+          <button id="loginBtn">Login with GitHub</button>
+        </nav>
+      </header>
+
+      <section class="hero">
+        <div class="hero-copy">
+          <p class="eyebrow">Realtime Pair Programming</p>
+          <h1>
+            Build together in one browser room with
+            <span>shared code + voice + camera</span>.
+          </h1>
+          <p>
+            Invite a friend or mentor by GitHub username, code side-by-side, run Python/C++,
+            and ship faster with focused pair sessions.
+          </p>
+          <div class="hero-actions">
+            <button id="heroLoginBtn">Start with GitHub</button>
+            <a class="ghost" href="./pricing.html">Explore Plans</a>
+          </div>
+          <p id="authStatus">Not signed in</p>
+        </div>
+
+        <div class="hero-mock glass">
+          <div class="mock-head">
+            <p>Live Session</p>
+            <span>Room ready</span>
+          </div>
+          <div class="mock-layout">
+            <div class="mock-editor">
+              <p>// shared.ts</p>
+              <p>const partner = "mentor";</p>
+              <p>console.log("Pair flow active");</p>
+            </div>
+            <div class="mock-video-stack">
+              <div class="mock-video">
+                <strong>You</strong>
+                <div class="mini-grid self">
+                  <span></span>
+                  <span></span>
+                  <span></span>
+                </div>
+              </div>
+              <div class="mock-video">
+                <strong>Partner</strong>
+                <div class="mini-grid partner">
+                  <span></span>
+                  <span></span>
+                  <span></span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="cta-panel glass">
+        <div>
+          <p class="eyebrow">Ready To Pair?</p>
+          <h3>Open your workspace and send your first invite.</h3>
+        </div>
+        <a href="./app.html">Open Workspace</a>
+      </section>
+    </main>
+
+    <script src="./config.js?v=20260301a"></script>
+    <script src="./app.js?v=20260228c" type="module"></script>
+  </body>
+</html>

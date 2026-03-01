@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>CodeMate DSA Problem</title>
+    <link rel="stylesheet" href="./dsa.css?v=20260228m" />
+  </head>
+  <body>
+    <div class="page-bg"></div>
+    <main class="dsa-shell">
+      <header class="topbar card">
+        <a class="brand" href="./index.html">CodeMate</a>
+        <nav>
+          <a href="./dsa.html">DSA Track</a>
+          <a href="./app.html">Workspace</a>
+          <a href="./profile.html">Profile</a>
+          <button id="loginBtn">Login with GitHub</button>
+        </nav>
+      </header>
+
+      <section id="problemHeader" class="hero card">
+        <p class="eyebrow">Problem</p>
+        <h1>Loading...</h1>
+        <p id="problemMeta"></p>
+      </section>
+
+      <section class="question-grid">
+        <article class="card statement full-width">
+          <h2>Statement</h2>
+          <p id="prompt"></p>
+
+          <h3>Input Format</h3>
+          <pre id="inputFormat"></pre>
+
+          <h3>Output Format</h3>
+          <pre id="outputFormat"></pre>
+
+          <h3>Constraints</h3>
+          <ul id="constraints"></ul>
+
+          <h3>Examples</h3>
+          <div id="examples"></div>
+        </article>
+      </section>
+
+      <section class="card link-panel">
+        <h2>Link This Question To A Room</h2>
+        <p>Use this to start a paired room. Test execution and pass/fail will happen in room only.</p>
+        <div class="pair-controls">
+          <input id="partnerUsername" placeholder="Partner GitHub username (optional)" />
+          <button id="startPairBtn">Start Pair Room For This Question</button>
+        </div>
+        <p id="linkStatus" class="empty"></p>
+      </section>
+    </main>
+
+    <script src="./config.js?v=20260301a"></script>
+    <script src="./dsa-problem.js?v=20260228f" type="module"></script>
+  </body>
+</html>

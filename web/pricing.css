@@ -1,0 +1,244 @@
+@import url("https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Space+Grotesk:wght@400;500;700&display=swap");
+
+:root {
+  --bg-1: #ffffff;
+  --bg-2: #f7f9ff;
+  --ink: #0f1b33;
+  --muted: #5e6f8f;
+  --accent: #4c6fff;
+  --line: rgba(134, 160, 209, 0.35);
+  --glass: #ffffff;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: "Space Grotesk", sans-serif;
+  color: var(--ink);
+  background: #ffffff;
+}
+
+.page-bg {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 12% 8%, rgba(87, 152, 255, 0.24) 0%, rgba(87, 152, 255, 0) 32%),
+    radial-gradient(circle at 86% 0%, rgba(130, 120, 255, 0.06) 0%, rgba(255, 112, 68, 0) 36%);
+}
+
+.pricing-page {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 24px;
+  display: grid;
+  gap: 14px;
+  position: relative;
+  z-index: 1;
+}
+
+.glass {
+  background: var(--glass);
+  border: 1px solid var(--line);
+  backdrop-filter: blur(6px);
+  border-radius: 20px;
+}
+
+.topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+}
+
+.brand {
+  color: var(--ink);
+  text-decoration: none;
+  font-family: "Sora", sans-serif;
+  font-weight: 800;
+  font-size: 1.3rem;
+}
+
+.top-actions {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.top-actions a,
+button {
+  border: 0;
+  border-radius: 12px;
+  padding: 10px 14px;
+  background: var(--accent);
+  color: #fff;
+  font-weight: 700;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.pricing-hero {
+  padding: 18px;
+}
+
+.eyebrow {
+  margin: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  font-weight: 700;
+  font-size: 0.8rem;
+  color: #4f74d1;
+}
+
+.pricing-hero h1 {
+  margin: 8px 0 10px;
+  font-family: "Sora", sans-serif;
+  font-size: clamp(1.8rem, 5vw, 3.2rem);
+}
+
+.pricing-hero p {
+  margin: 0;
+  color: var(--muted);
+  max-width: 780px;
+}
+
+#authStatus {
+  margin-top: 10px;
+  color: #3d5f95;
+  font-weight: 600;
+}
+
+.controls {
+  padding: 14px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.segment {
+  background: #f5f8ff;
+  border: 1px solid #b7c9ea;
+  border-radius: 13px;
+  padding: 4px;
+  display: inline-flex;
+  gap: 5px;
+}
+
+.segment button {
+  background: transparent;
+  color: #35598d;
+  border: 1px solid transparent;
+}
+
+.segment button.active {
+  background: #f2f6ff;
+  color: #224272;
+}
+
+.billing-cycle {
+  border: 1px solid #b7c9ea;
+  border-radius: 13px;
+  padding: 10px 12px;
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.billing-cycle legend {
+  padding: 0 4px;
+  color: #4b6ea8;
+  font-weight: 700;
+}
+
+.cards {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 310px;
+  gap: 12px;
+}
+
+.main-card,
+.side-card {
+  padding: 18px;
+}
+
+.plan-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: baseline;
+}
+
+.main-card h2,
+.side-card h3 {
+  margin: 0;
+  font-family: "Sora", sans-serif;
+}
+
+.price {
+  margin: 8px 0;
+  font-size: 2.1rem;
+  font-family: "Sora", sans-serif;
+  font-weight: 800;
+}
+
+.local-price {
+  margin: 0 0 10px;
+  font-size: 0.9rem;
+  color: #4a648e;
+  font-weight: 700;
+}
+
+#planFeatures {
+  margin: 8px 0 12px;
+  padding-left: 18px;
+  color: #4a648e;
+}
+
+#planFeatures li {
+  margin-bottom: 7px;
+}
+
+.checkout-note {
+  margin: 10px 0 0;
+  color: var(--muted);
+  font-size: 0.86rem;
+}
+
+.badge {
+  display: inline-flex;
+  margin: 0 0 6px;
+  padding: 4px 8px;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  background: rgba(121, 151, 210, 0.2);
+  border: 1px solid #4d75aa;
+}
+
+.side-card p {
+  margin: 7px 0;
+  color: #4a648e;
+}
+
+@media (max-width: 900px) {
+  .cards {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 700px) {
+  .pricing-page {
+    padding: 14px;
+  }
+
+  .topbar {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+}

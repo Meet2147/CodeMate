@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>CodeMate Workspace</title>
+    <link rel="stylesheet" href="./workspace.css?v=20260228m" />
+  </head>
+  <body>
+    <div class="page-bg"></div>
+    <main class="workspace-shell">
+      <header class="glass">
+        <a class="brand" href="./index.html">CodeMate</a>
+        <nav>
+          <a href="./pricing.html">Pricing</a>
+          <a href="./dsa.html">DSA Track</a>
+          <a href="./profile.html">Profile</a>
+          <button id="githubSignIn">Login with GitHub</button>
+        </nav>
+      </header>
+
+      <section class="welcome glass">
+        <p class="eyebrow">Workspace Lobby</p>
+        <h1>Start a room. Invite your partner. Code instantly.</h1>
+        <p id="authStatus">Not signed in</p>
+      </section>
+
+      <section class="grid">
+        <article class="panel glass">
+          <h2>Create + Invite</h2>
+          <p>Send invite by GitHub username and auto-open your room.</p>
+          <div class="row">
+            <input id="inviteUsername" placeholder="Partner GitHub username" />
+            <button id="inviteAndCreateRoom">Send Invite + Auto Join</button>
+          </div>
+        </article>
+
+        <article class="panel glass">
+          <h2>Join With Room Code</h2>
+          <p>Use this when your partner shared a room code directly.</p>
+          <div class="row">
+            <input id="joinRoomCode" placeholder="Enter room code" />
+            <button id="joinVideoRoom">Join Room</button>
+          </div>
+        </article>
+      </section>
+
+      <section class="panel glass">
+        <div class="inbox-head">
+          <h2>Invite Inbox</h2>
+          <button id="refreshInvites">Refresh</button>
+        </div>
+        <div id="inviteList"></div>
+      </section>
+    </main>
+
+    <script src="./config.js?v=20260301a"></script>
+    <script src="./workspace.js?v=20260228d" type="module"></script>
+  </body>
+</html>

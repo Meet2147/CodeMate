@@ -1,0 +1,262 @@
+@import url("https://fonts.googleapis.com/css2?family=Sora:wght@500;700;800&family=Space+Grotesk:wght@400;500;700&display=swap");
+
+:root {
+  --bg-1: #ffffff;
+  --bg-2: #f7f9ff;
+  --ink: #0f1b33;
+  --muted: #5e6f8f;
+  --accent: #4c6fff;
+  --line: rgba(134, 160, 209, 0.35);
+  --card: #ffffff;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: "Space Grotesk", sans-serif;
+  color: var(--ink);
+  background: #ffffff;
+}
+
+.page-bg {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 12% 8%, rgba(95, 158, 255, 0.2) 0%, rgba(95, 158, 255, 0) 35%),
+    radial-gradient(circle at 88% 4%, rgba(130, 120, 255, 0.06) 0%, rgba(255, 111, 71, 0) 38%);
+}
+
+.dsa-shell {
+  max-width: 1160px;
+  margin: 0 auto;
+  padding: 20px;
+  display: grid;
+  gap: 12px;
+  position: relative;
+  z-index: 1;
+}
+
+.card {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  backdrop-filter: blur(10px);
+}
+
+.topbar {
+  padding: 12px 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.brand {
+  text-decoration: none;
+  color: var(--ink);
+  font-family: "Sora", sans-serif;
+  font-weight: 800;
+  font-size: 1.25rem;
+}
+
+nav { display: flex; gap: 10px; align-items: center; }
+
+nav a, button {
+  border: 0;
+  border-radius: 12px;
+  padding: 9px 12px;
+  text-decoration: none;
+  background: var(--accent);
+  color: #fff;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.hero { padding: 16px; }
+
+.eyebrow {
+  margin: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: #4f74d1;
+  font-weight: 700;
+  font-size: 0.78rem;
+}
+
+.hero h1 {
+  margin: 8px 0;
+  font-family: "Sora", sans-serif;
+}
+
+.hero p { margin: 0; color: var(--muted); }
+
+.filters {
+  padding: 12px;
+  display: grid;
+  grid-template-columns: 180px 1fr;
+  gap: 10px;
+}
+
+label {
+  display: grid;
+  gap: 5px;
+  color: #cfddf8;
+  font-size: 0.9rem;
+}
+
+select, input, textarea, pre {
+  border: 1px solid #3e6195;
+  border-radius: 10px;
+  background: #f8fbff;
+  color: #1d3760;
+  padding: 10px;
+}
+
+.problem-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 10px;
+}
+
+.problem-card {
+  padding: 14px;
+  display: grid;
+  gap: 8px;
+}
+
+.problem-card h3 {
+  margin: 0;
+  font-family: "Sora", sans-serif;
+  font-size: 1rem;
+}
+
+.tag-row { display: flex; gap: 8px; flex-wrap: wrap; }
+
+.tag {
+  display: inline-flex;
+  border-radius: 999px;
+  padding: 4px 8px;
+  font-size: 0.75rem;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid #4f6d9d;
+}
+
+.tag.easy { color: #89f2bf; }
+.tag.medium { color: #ffd67e; }
+.tag.hard { color: #ff9a9a; }
+
+.problem-card a {
+  justify-self: start;
+  text-decoration: none;
+  border-radius: 10px;
+  padding: 8px 10px;
+  color: #fff;
+  background: var(--accent);
+  font-weight: 700;
+}
+
+.solve-grid,
+.question-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr);
+  gap: 10px;
+}
+
+.statement, .editor-panel { padding: 14px; min-height: 0; }
+.link-panel { padding: 14px; }
+
+.full-width {
+  grid-column: 1 / -1;
+}
+
+.link-panel h2 {
+  margin: 0;
+  font-family: "Sora", sans-serif;
+}
+
+.link-panel p {
+  color: #d7e5ff;
+}
+
+.statement h2, .statement h3 {
+  margin: 8px 0;
+  font-family: "Sora", sans-serif;
+}
+
+.statement p { color: #d7e5ff; }
+
+.statement ul { margin: 0; color: #d7e5ff; }
+
+.statement pre {
+  white-space: pre-wrap;
+  margin: 0;
+}
+
+.example-box {
+  border: 1px solid #3b5f95;
+  border-radius: 10px;
+  padding: 10px;
+  margin-bottom: 8px;
+  background: rgba(8, 16, 31, 0.7);
+}
+
+.toolbar {
+  display: flex;
+  align-items: end;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 8px;
+}
+
+.pair-controls {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+#codeEditor {
+  width: 100%;
+  min-height: 340px;
+  resize: vertical;
+  font-family: "SFMono-Regular", Menlo, Consolas, monospace;
+  font-size: 13px;
+}
+
+#submitSummary {
+  white-space: pre-wrap;
+  margin: 8px 0;
+  font-family: "SFMono-Regular", Menlo, Consolas, monospace;
+}
+
+#testResults {
+  display: grid;
+  gap: 6px;
+}
+
+.test-item {
+  border: 1px solid #3d6299;
+  border-radius: 10px;
+  padding: 8px;
+  background: rgba(8, 16, 31, 0.75);
+}
+
+.test-item.pass { border-color: #2f9a6b; }
+.test-item.fail { border-color: #ba4c4c; }
+
+.test-item p { margin: 0 0 4px; font-size: 0.85rem; color: #d4e3ff; }
+
+.empty { color: var(--muted); }
+
+@media (max-width: 980px) {
+  .solve-grid, .question-grid { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 760px) {
+  .dsa-shell { padding: 14px; }
+  .topbar { flex-direction: column; align-items: flex-start; gap: 8px; }
+  nav { flex-wrap: wrap; }
+  .filters { grid-template-columns: 1fr; }
+  .pair-controls { grid-template-columns: 1fr; }
+}

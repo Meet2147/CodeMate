@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>CodeMate Profile</title>
+    <link rel="stylesheet" href="./profile.css?v=20260228m" />
+  </head>
+  <body>
+    <div class="page-bg"></div>
+    <main class="profile-shell">
+      <header class="topbar card">
+        <a class="brand" href="./index.html">CodeMate</a>
+        <nav>
+          <a href="./dsa.html">DSA Track</a>
+          <a href="./app.html">Workspace</a>
+          <a href="./profile.html">Profile</a>
+          <button id="loginBtn">Login with GitHub</button>
+        </nav>
+      </header>
+
+      <section class="hero card">
+        <p class="eyebrow">Profile</p>
+        <h1 id="profileTitle">Loading profile...</h1>
+        <p id="profileSub">Sign in to view your streak and ranking.</p>
+      </section>
+
+      <section class="stats-grid" id="statsGrid"></section>
+
+      <section class="card leaderboard">
+        <div class="leaderboard-head">
+          <h2>Leaderboard</h2>
+          <button id="refreshBtn">Refresh</button>
+        </div>
+        <div id="leaderboardList" class="leaderboard-list"></div>
+      </section>
+    </main>
+
+    <script src="./config.js?v=20260301a"></script>
+    <script src="./profile.js?v=20260228a" type="module"></script>
+  </body>
+</html>

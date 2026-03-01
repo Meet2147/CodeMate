@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>CodeMate DSA Track</title>
+    <link rel="stylesheet" href="./dsa.css?v=20260228m" />
+  </head>
+  <body>
+    <div class="page-bg"></div>
+    <main class="dsa-shell">
+      <header class="topbar card">
+        <a class="brand" href="./index.html">CodeMate</a>
+        <nav>
+          <a href="./pricing.html">Pricing</a>
+          <a href="./app.html">Workspace</a>
+          <a href="./profile.html">Profile</a>
+          <button id="loginBtn">Login with GitHub</button>
+        </nav>
+      </header>
+
+      <section class="hero card">
+        <p class="eyebrow">Interview Prep</p>
+        <h1>CodeMate Top 150 DSA Track</h1>
+        <p id="trackMeta">Loading problems...</p>
+      </section>
+
+      <section class="filters card">
+        <label>
+          Difficulty
+          <select id="difficultyFilter">
+            <option value="all">All</option>
+            <option value="easy">Easy</option>
+            <option value="medium">Medium</option>
+            <option value="hard">Hard</option>
+          </select>
+        </label>
+        <label>
+          Search
+          <input id="searchInput" placeholder="Search by title or topic" />
+        </label>
+      </section>
+
+      <section id="problemList" class="problem-list"></section>
+    </main>
+
+    <script src="./config.js?v=20260301a"></script>
+    <script src="./dsa.js?v=20260228f" type="module"></script>
+  </body>
+</html>

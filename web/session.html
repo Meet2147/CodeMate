@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>CodeMate Browser Session</title>
+    <link rel="stylesheet" href="./session.css?v=20260228m" />
+  </head>
+  <body>
+    <main class="workspace">
+      <section class="code-pane">
+        <header class="pane-header card">
+          <h1>CodeMate Pair Workspace</h1>
+          <p id="sessionMeta"></p>
+          <p id="problemContext"></p>
+        </header>
+
+        <div class="editor-wrap card">
+          <div class="editor-toolbar">
+            <p>Shared Editor</p>
+            <div class="editor-actions">
+              <select id="languageSelect" aria-label="Language">
+                <option value="python3">Python 3</option>
+                <option value="cpp">C++</option>
+              </select>
+              <input id="packageInput" placeholder="Python package (requests / numpy==1.26.4)" />
+              <button id="installPackageBtn">Install Package</button>
+              <button id="runTestsBtn">Run Tests</button>
+              <button id="runCodeBtn">Run Code</button>
+              <button id="copyRoomBtn">Copy Room Code</button>
+            </div>
+          </div>
+          <textarea id="codeEditor" spellcheck="false"></textarea>
+          <pre id="runOutput" class="run-output">Output will appear here.</pre>
+        </div>
+      </section>
+
+      <aside class="media-pane">
+        <section class="participants card">
+          <h2>Participants</h2>
+          <ul id="participantsList"></ul>
+        </section>
+
+        <section class="card">
+          <h2>You</h2>
+          <video id="localVideo" autoplay playsinline muted></video>
+        </section>
+
+        <section class="card">
+          <h2>Partner</h2>
+          <video id="remoteVideo" autoplay playsinline></video>
+        </section>
+
+        <section class="controls card">
+          <p id="status">Initializing session...</p>
+          <p id="mediaDiagnostics"></p>
+          <div class="actions">
+            <button id="backToLobbyBtn">Back To Lobby</button>
+            <button id="toggleCameraBtn">Camera Off</button>
+            <button id="toggleMicBtn">Mic Off</button>
+            <button id="retryMediaBtn">Retry Media</button>
+            <button id="leaveBtn">Leave Session</button>
+          </div>
+        </section>
+      </aside>
+    </main>
+
+    <script src="./config.js?v=20260301a"></script>
+    <script src="./session.js?v=20260228g" type="module"></script>
+  </body>
+</html>

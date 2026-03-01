@@ -1,0 +1,233 @@
+@import url("https://fonts.googleapis.com/css2?family=Sora:wght@500;700;800&family=Space+Grotesk:wght@400;500;700&display=swap");
+
+:root {
+  --bg-1: #ffffff;
+  --bg-2: #f7f9ff;
+  --pane: #ffffff;
+  --card: #ffffff;
+  --ink: #0f1b33;
+  --muted: #5e6f8f;
+  --accent: #4c6fff;
+  --line: rgba(134, 160, 209, 0.35);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: "Space Grotesk", sans-serif;
+  color: var(--ink);
+  background: #ffffff;
+}
+
+.workspace {
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 370px;
+  gap: 12px;
+  padding: 12px;
+}
+
+.card {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  padding: 12px;
+}
+
+.code-pane {
+  background: var(--pane);
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  padding: 12px;
+  display: grid;
+  grid-template-rows: auto 1fr;
+  gap: 10px;
+  min-height: 0;
+}
+
+.pane-header h1 {
+  margin: 0;
+  font-family: "Sora", sans-serif;
+  font-size: 1.3rem;
+}
+
+.pane-header p {
+  margin: 4px 0 0;
+  color: var(--muted);
+}
+
+#problemContext {
+  margin-top: 6px;
+  color: #486896;
+  font-size: 0.9rem;
+}
+
+#problemContext a {
+  color: #385f9d;
+}
+
+.editor-wrap {
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  gap: 8px;
+  min-height: 0;
+}
+
+.editor-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+}
+
+.editor-toolbar p {
+  margin: 0;
+  font-size: 0.88rem;
+  color: var(--muted);
+}
+
+.editor-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+select,
+#packageInput,
+button {
+  border-radius: 10px;
+  border: 1px solid #3f6496;
+  background: #f5f8ff;
+  color: #1d3760;
+  padding: 9px 10px;
+  font-weight: 700;
+}
+
+button {
+  background: var(--accent);
+  border: 0;
+  color: #fff;
+  cursor: pointer;
+}
+
+#packageInput {
+  min-width: 260px;
+}
+
+#codeEditor {
+  width: 100%;
+  height: 100%;
+  min-height: 340px;
+  resize: none;
+  border-radius: 13px;
+  border: 1px solid #3b5d8b;
+  background: #0d1630;
+  color: #f2f8ff;
+  font-family: "SFMono-Regular", Menlo, Consolas, monospace;
+  font-size: 14px;
+  line-height: 1.5;
+  padding: 13px;
+}
+
+.run-output {
+  margin: 0;
+  min-height: 120px;
+  max-height: 250px;
+  overflow: auto;
+  border-radius: 12px;
+  border: 1px solid #3b5d8b;
+  background: #111b36;
+  color: #b5f2ff;
+  font-family: "SFMono-Regular", Menlo, Consolas, monospace;
+  font-size: 12px;
+  line-height: 1.45;
+  padding: 10px;
+  white-space: pre-wrap;
+}
+
+.media-pane {
+  display: grid;
+  gap: 8px;
+  align-content: start;
+}
+
+.card h2 {
+  margin: 0 0 8px;
+  font-family: "Sora", sans-serif;
+  font-size: 0.94rem;
+}
+
+video {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  border-radius: 10px;
+  background: #03070f;
+  object-fit: cover;
+}
+
+#participantsList {
+  margin: 0;
+  padding-left: 18px;
+  color: var(--muted);
+}
+
+#participantsList li {
+  margin-bottom: 3px;
+}
+
+.controls p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.83rem;
+}
+
+.actions {
+  margin-top: 8px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+}
+
+@media (max-width: 1240px) {
+  .editor-toolbar {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .editor-actions {
+    justify-content: flex-start;
+  }
+}
+
+@media (max-width: 1030px) {
+  .workspace {
+    grid-template-columns: 1fr;
+  }
+
+  .media-pane {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .participants,
+  .controls {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (max-width: 700px) {
+  .workspace {
+    padding: 8px;
+  }
+
+  .media-pane {
+    grid-template-columns: 1fr;
+  }
+
+  #packageInput {
+    min-width: 180px;
+  }
+}
