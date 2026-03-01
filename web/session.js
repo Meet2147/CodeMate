@@ -38,6 +38,7 @@ let suppressEditorBroadcast = false;
 let suppressLanguageBroadcast = false;
 let editorDebounce = null;
 let linkedProblem = null;
+let needsRemotePlaybackRetry = false;
 
 function getAuth() {
   const raw = localStorage.getItem("pairpulse_auth");
@@ -158,6 +159,23 @@ function signalingUrl() {
   return url.toString();
 }
 
+function shouldInitiateOffer(peerId) {
+  return String(userId) < String(peerId);
+}
+
+function requestRemotePlaybackRetry() {
+  if (!needsRemotePlaybackRetry) {
+    return;
+  }
+  remoteVideo.play().then(
+    () => {
+      needsRemotePlaybackRetry = false;
+      setStatus("Partner media connected.");
+    },
+    () => {}
+  );
+}
+
 function createPeerConnection(targetUserId) {
   const pc = new RTCPeerConnection({
     iceServers: [
@@ -174,7 +192,17 @@ function createPeerConnection(targetUserId) {
     const [stream] = event.streams;
     if (stream) {
       remoteVideo.srcObject = stream;
-      setStatus("Partner media connected.");
+      remoteVideo.muted = false;
+      remoteVideo.play().then(
+        () => {
+          needsRemotePlaybackRetry = false;
+          setStatus("Partner media connected.");
+        },
+        () => {
+          needsRemotePlaybackRetry = true;
+          setStatus("Partner media received. Click anywhere once to enable playback.");
+        }
+      );
     }
   };
 
@@ -274,7 +302,9 @@ function openSocket() {
       renderParticipants();
       const peers = participants.filter((id) => id !== userId);
       for (const peerId of peers) {
-        await makeOffer(peerId);
+        if (shouldInitiateOffer(peerId)) {
+          await makeOffer(peerId);
+        }
       }
       return;
     }
@@ -286,7 +316,9 @@ function openSocket() {
       }
 
       if (message.userId !== userId) {
-        await makeOffer(message.userId);
+        if (shouldInitiateOffer(message.userId)) {
+          await makeOffer(message.userId);
+        }
         setStatus(`@${message.userId.replace("user_", "")} joined.`);
         broadcastEditorState();
       }
@@ -630,6 +662,7 @@ backToLobbyBtn.addEventListener("click", () => {
 });
 
 window.addEventListener("beforeunload", cleanupSession);
+window.addEventListener("pointerdown", requestRemotePlaybackRetry);
 
 updateMediaButtons();
 refreshMediaDiagnostics();
