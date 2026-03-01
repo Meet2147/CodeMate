@@ -12,6 +12,8 @@ const API_BASE = (
 
 const authStatus = document.querySelector("#authStatus");
 const inviteListNode = document.querySelector("#inviteList");
+const recentRoomsNode = document.querySelector("#recentRooms");
+const recentRoomsKey = "codemate_recent_rooms";
 
 function candidateApiBases() {
   const list = [API_BASE, "http://localhost:8080"];
@@ -68,6 +70,77 @@ function getAuth() {
   }
 }
 
+async function refreshAuthTokenIfPossible() {
+  const auth = getAuth();
+  if (!auth?.token) return;
+  try {
+    const response = await fetch(`${API_BASE}/auth/refresh`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${auth.token}`
+      }
+    });
+    if (!response.ok) return;
+    const data = await response.json();
+    if (!data?.token || !data?.user?.id || !data?.user?.githubUsername) return;
+    localStorage.setItem(
+      "pairpulse_auth",
+      JSON.stringify({
+        token: data.token,
+        userId: data.user.id,
+        githubUsername: data.user.githubUsername
+      })
+    );
+  } catch {
+    // Keep current token.
+  }
+}
+
+function getRecentRooms() {
+  const raw = localStorage.getItem(recentRoomsKey);
+  if (!raw) return [];
+  try {
+    const items = JSON.parse(raw);
+    return Array.isArray(items) ? items : [];
+  } catch {
+    return [];
+  }
+}
+
+function rememberRoom(roomCode, problemId) {
+  if (!roomCode) return;
+  const items = getRecentRooms().filter((item) => item?.roomCode !== roomCode);
+  items.unshift({
+    roomCode,
+    problemId: problemId || "",
+    updatedAt: Date.now()
+  });
+  localStorage.setItem(recentRoomsKey, JSON.stringify(items.slice(0, 10)));
+}
+
+function renderRecentRooms() {
+  if (!recentRoomsNode) return;
+  const items = getRecentRooms();
+  if (!items.length) {
+    recentRoomsNode.innerHTML = "<p>No recent rooms yet.</p>";
+    return;
+  }
+
+  recentRoomsNode.innerHTML = items
+    .map((item) => {
+      const date = new Date(Number(item.updatedAt || Date.now())).toLocaleString();
+      return `
+      <article class="invite-item">
+        <p><strong>Room ${item.roomCode}</strong></p>
+        ${item.problemId ? `<p class="invite-meta">Problem: ${item.problemId}</p>` : ""}
+        <p class="invite-meta">${date}</p>
+        <button data-rejoin-room="${item.roomCode}" data-problem-id="${item.problemId || ""}">Rejoin Room</button>
+      </article>
+    `;
+    })
+    .join("");
+}
+
 function openVideoRoom(roomCode, problemId) {
   const auth = getAuth();
   if (!auth?.userId || !auth?.githubUsername) {
@@ -82,6 +155,8 @@ function openVideoRoom(roomCode, problemId) {
   if (problemId) {
     sessionUrl.searchParams.set("problemId", problemId);
   }
+  rememberRoom(roomCode, problemId);
+  renderRecentRooms();
   window.location.href = sessionUrl.toString();
 }
 
@@ -127,8 +202,11 @@ async function loadInvites() {
 }
 
 storeAuthFromUrlIfPresent();
-renderAuthState();
-loadInvites().catch(() => renderInviteList([]));
+renderRecentRooms();
+refreshAuthTokenIfPossible().finally(() => {
+  renderAuthState();
+  loadInvites().catch(() => renderInviteList([]));
+});
 
 document.addEventListener("click", async (event) => {
   const target = event.target;
@@ -232,6 +310,30 @@ document.addEventListener("click", async (event) => {
       openVideoRoom(joinData.session.roomCode, inviteProblemId || undefined);
     } catch (error) {
       alert(error.message || "Could not accept and join");
+    }
+  }
+
+  if (target.dataset.rejoinRoom) {
+    const auth = getAuth();
+    const roomCodeToJoin = String(target.dataset.rejoinRoom || "").trim();
+    const problemIdToJoin = String(target.dataset.problemId || "").trim();
+    if (!auth?.userId) {
+      alert("Sign in first.");
+      return;
+    }
+    if (!roomCodeToJoin) {
+      alert("Missing room code.");
+      return;
+    }
+    try {
+      const data = await fetchJsonWithFallback("/pairing/sessions/join-by-room", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ roomCode: roomCodeToJoin })
+      });
+      openVideoRoom(data.session.roomCode, problemIdToJoin || undefined);
+    } catch (error) {
+      alert(error.message || "Could not rejoin room");
     }
   }
 

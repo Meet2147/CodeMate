@@ -30,9 +30,17 @@ interface LeaveRoomMessage {
 type ClientMessage = JoinRoomMessage | RelayMessage | RoomBroadcastMessage | LeaveRoomMessage;
 
 type RoomMembers = Map<string, WebSocket>;
+interface RoomCodeSnapshot {
+  text: string;
+  language: string;
+  updatedAt: number;
+  fromUserId: string;
+}
 const rooms = new Map<string, RoomMembers>();
+const roomSnapshots = new Map<string, RoomCodeSnapshot>();
 const socketIdentity = new WeakMap<WebSocket, { roomCode: string; userId: string }>();
 const socketUsers = new WeakMap<WebSocket, { userId: string }>();
+const socketAlive = new WeakMap<WebSocket, boolean>();
 
 function sendJson(socket: WebSocket, payload: object): void {
   if (socket.readyState === WebSocket.OPEN) {
@@ -99,6 +107,17 @@ function ensureJoinedRoom(socket: WebSocket, roomCode: string): { roomCode: stri
 
 export function setupSignalingServer(server: HttpServer): void {
   const wss = new WebSocketServer({ server, path: "/ws" });
+  const heartbeatInterval = setInterval(() => {
+    for (const client of wss.clients) {
+      const isAlive = socketAlive.get(client);
+      if (isAlive === false) {
+        client.terminate();
+        continue;
+      }
+      socketAlive.set(client, false);
+      client.ping();
+    }
+  }, 25000);
 
   wss.on("connection", (socket, req) => {
     const origin = String(req.headers.origin || "").trim();
@@ -118,7 +137,11 @@ export function setupSignalingServer(server: HttpServer): void {
     }
 
     socketUsers.set(socket, { userId });
+    socketAlive.set(socket, true);
     sendJson(socket, { type: "connected", userId });
+    socket.on("pong", () => {
+      socketAlive.set(socket, true);
+    });
 
     socket.on("message", (rawMessage) => {
       try {
@@ -153,6 +176,15 @@ export function setupSignalingServer(server: HttpServer): void {
             roomCode,
             participants: [...members.keys()]
           });
+          const snapshot = roomSnapshots.get(roomCode);
+          if (snapshot) {
+            sendJson(socket, {
+              type: "code-snapshot",
+              roomCode,
+              fromUserId: snapshot.fromUserId,
+              payload: snapshot
+            });
+          }
 
           broadcastRoom(roomCode, { type: "participant-joined", roomCode, userId: authUserId }, authUserId);
           return;
@@ -191,6 +223,16 @@ export function setupSignalingServer(server: HttpServer): void {
 
         if (message.type === "sync-code") {
           const identity = ensureJoinedRoom(socket, message.roomCode);
+          const payload = message.payload as Partial<RoomCodeSnapshot> | null;
+          const text = typeof payload?.text === "string" ? payload.text : "";
+          const language = typeof payload?.language === "string" ? payload.language : "python3";
+          const updatedAt = Number(payload?.updatedAt || Date.now());
+          roomSnapshots.set(identity.roomCode, {
+            text,
+            language,
+            updatedAt: Number.isFinite(updatedAt) ? updatedAt : Date.now(),
+            fromUserId: identity.userId
+          });
           broadcastRoom(
             identity.roomCode,
             {
@@ -212,9 +254,14 @@ export function setupSignalingServer(server: HttpServer): void {
 
     socket.on("close", () => {
       const identity = socketIdentity.get(socket);
+      socketAlive.delete(socket);
       if (!identity) return;
       leaveRoom(identity.roomCode, identity.userId);
       socketIdentity.delete(socket);
     });
+  });
+
+  wss.on("close", () => {
+    clearInterval(heartbeatInterval);
   });
 }

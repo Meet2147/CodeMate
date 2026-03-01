@@ -32,12 +32,39 @@ function getAuth() {
   }
 }
 
+async function refreshAuthTokenIfPossible() {
+  const auth = getAuth();
+  if (!auth?.token) return;
+  try {
+    const response = await fetch(`${API_BASE}/auth/refresh`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${auth.token}`
+      }
+    });
+    if (!response.ok) return;
+    const data = await response.json();
+    if (!data?.token || !data?.user?.id || !data?.user?.githubUsername) return;
+    localStorage.setItem(
+      "pairpulse_auth",
+      JSON.stringify({
+        token: data.token,
+        userId: data.user.id,
+        githubUsername: data.user.githubUsername
+      })
+    );
+  } catch {
+    // Ignore refresh failure and keep existing auth.
+  }
+}
+
 function startGitHubAuth() {
   const redirectUri = `${window.location.origin}${window.location.pathname}`;
   window.location.href = `${API_BASE}/auth/github/start?redirect_uri=${encodeURIComponent(redirectUri)}`;
 }
 
 storeAuthFromUrlIfPresent();
+refreshAuthTokenIfPossible();
 
 const authStatus = document.querySelector("#authStatus");
 const auth = getAuth();

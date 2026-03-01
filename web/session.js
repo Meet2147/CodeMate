@@ -39,6 +39,10 @@ let suppressLanguageBroadcast = false;
 let editorDebounce = null;
 let linkedProblem = null;
 let needsRemotePlaybackRetry = false;
+let shouldAutoReconnect = true;
+let reconnectTimer = null;
+let reconnectAttempts = 0;
+const roomDraftKey = roomCode ? `codemate_room_draft_${roomCode}` : "";
 
 function getAuth() {
   const raw = localStorage.getItem("pairpulse_auth");
@@ -50,9 +54,33 @@ function getAuth() {
   }
 }
 
-const auth = getAuth();
+let auth = getAuth();
 const userId = String(auth?.userId || params.get("userId") || "").trim();
 const githubUsername = String(auth?.githubUsername || params.get("githubUsername") || "").trim();
+
+async function refreshAuthTokenIfPossible() {
+  if (!auth?.token) return;
+  try {
+    const response = await fetch(`${API_BASE}/auth/refresh`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${auth.token}`
+      }
+    });
+    if (!response.ok) return;
+    const data = await response.json();
+    if (!data?.token || !data?.user?.id || !data?.user?.githubUsername) return;
+    const refreshed = {
+      token: data.token,
+      userId: data.user.id,
+      githubUsername: data.user.githubUsername
+    };
+    localStorage.setItem("pairpulse_auth", JSON.stringify(refreshed));
+    auth = refreshed;
+  } catch {
+    // Keep current token.
+  }
+}
 
 function candidateApiBases() {
   const list = [API_BASE, "http://localhost:8080"];
@@ -103,6 +131,27 @@ function updateMediaButtons() {
 
 function setRunOutput(text) {
   runOutputNode.textContent = text;
+}
+
+function saveRoomDraft() {
+  if (!roomDraftKey) return;
+  const snapshot = {
+    text: codeEditorNode.value,
+    language: languageSelectNode.value,
+    updatedAt: Date.now()
+  };
+  localStorage.setItem(roomDraftKey, JSON.stringify(snapshot));
+}
+
+function loadRoomDraft() {
+  if (!roomDraftKey) return null;
+  const raw = localStorage.getItem(roomDraftKey);
+  if (!raw) return null;
+  try {
+    return JSON.parse(raw);
+  } catch {
+    return null;
+  }
 }
 
 async function loadLinkedProblem() {
@@ -174,6 +223,12 @@ function requestRemotePlaybackRetry() {
     },
     () => {}
   );
+}
+
+function closeAllPeerConnections() {
+  peerConnections.forEach((pc) => pc.close());
+  peerConnections.clear();
+  remoteVideo.srcObject = null;
 }
 
 function createPeerConnection(targetUserId) {
@@ -286,12 +341,17 @@ function broadcastEditorState() {
 }
 
 function openSocket() {
+  if (reconnectTimer) {
+    clearTimeout(reconnectTimer);
+    reconnectTimer = null;
+  }
+
   socket = new WebSocket(signalingUrl());
 
   socket.onopen = () => {
+    reconnectAttempts = 0;
     socket.send(JSON.stringify({ type: "join-room", roomCode, userId }));
     setStatus("Connected. Waiting for partner...");
-    broadcastEditorState();
   };
 
   socket.onmessage = async (event) => {
@@ -309,6 +369,24 @@ function openSocket() {
       return;
     }
 
+    if (message.type === "code-snapshot") {
+      const text = message.payload?.text;
+      const language = message.payload?.language;
+
+      if (typeof text === "string" && text !== codeEditorNode.value) {
+        suppressEditorBroadcast = true;
+        codeEditorNode.value = text;
+        suppressEditorBroadcast = false;
+      }
+      if (typeof language === "string" && language !== languageSelectNode.value) {
+        suppressLanguageBroadcast = true;
+        languageSelectNode.value = language;
+        suppressLanguageBroadcast = false;
+      }
+      saveRoomDraft();
+      return;
+    }
+
     if (message.type === "participant-joined") {
       if (!participants.includes(message.userId)) {
         participants.push(message.userId);
@@ -320,7 +398,6 @@ function openSocket() {
           await makeOffer(message.userId);
         }
         setStatus(`@${message.userId.replace("user_", "")} joined.`);
-        broadcastEditorState();
       }
       return;
     }
@@ -381,16 +458,36 @@ function openSocket() {
   socket.onerror = () => {
     setStatus("Signaling connection failed.");
   };
+
+  socket.onclose = () => {
+    closeAllPeerConnections();
+    participants = [];
+    renderParticipants();
+    if (!shouldAutoReconnect) {
+      return;
+    }
+    reconnectAttempts += 1;
+    const backoffMs = Math.min(10000, 800 * 2 ** Math.min(5, reconnectAttempts));
+    setStatus(`Connection dropped. Reconnecting in ${Math.ceil(backoffMs / 1000)}s...`);
+    reconnectTimer = setTimeout(() => {
+      openSocket();
+    }, backoffMs);
+  };
 }
 
 function cleanupSession() {
+  shouldAutoReconnect = false;
+  if (reconnectTimer) {
+    clearTimeout(reconnectTimer);
+    reconnectTimer = null;
+  }
+  saveRoomDraft();
   if (socket && socket.readyState === WebSocket.OPEN) {
     socket.send(JSON.stringify({ type: "leave-room", roomCode, userId }));
     socket.close();
   }
 
-  peerConnections.forEach((pc) => pc.close());
-  peerConnections.clear();
+  closeAllPeerConnections();
 
   if (localStream) {
     localStream.getTracks().forEach((track) => track.stop());
@@ -585,9 +682,19 @@ async function init() {
     return;
   }
 
+  await refreshAuthTokenIfPossible();
+
   sessionMetaNode.textContent = `Room ${roomCode} | @${githubUsername || userId.replace("user_", "")}`;
-  codeEditorNode.value = `# Room ${roomCode}\n# Shared browser editor\n\nprint(\"Hello from CodeMate\")\n`;
+  const cached = loadRoomDraft();
+  if (typeof cached?.text === "string" && cached.text.trim()) {
+    codeEditorNode.value = cached.text;
+  } else {
+    codeEditorNode.value = `# Room ${roomCode}\n# Shared browser editor\n\nprint(\"Hello from CodeMate\")\n`;
+  }
   languageSelectNode.value = "python3";
+  if (typeof cached?.language === "string") {
+    languageSelectNode.value = cached.language;
+  }
   await loadLinkedProblem();
 
   await initMedia();
@@ -602,6 +709,7 @@ codeEditorNode.addEventListener("input", () => {
   }
   editorDebounce = setTimeout(() => {
     broadcastEditorState();
+    saveRoomDraft();
   }, 120);
 });
 
@@ -610,6 +718,7 @@ languageSelectNode.addEventListener("change", () => {
     codeEditorNode.value = linkedProblem.starter[languageSelectNode.value];
   }
   if (suppressLanguageBroadcast) return;
+  saveRoomDraft();
   broadcastEditorState();
 });
 

@@ -15,7 +15,7 @@ interface JwtPayload {
 const pendingStates = new Map<string, PendingOAuthState>();
 
 const stateTtlMs = 10 * 60 * 1000;
-const tokenTtlSeconds = Number(process.env.AUTH_TOKEN_TTL_SECONDS || 60 * 60 * 24 * 30);
+const tokenTtlSeconds = Number(process.env.AUTH_TOKEN_TTL_SECONDS || 60 * 60 * 24 * 180);
 const jwtIssuer = String(process.env.JWT_ISSUER || "codemate-backend").trim();
 
 function getJwtSecret(): string {

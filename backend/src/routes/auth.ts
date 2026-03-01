@@ -145,4 +145,30 @@ router.get("/me", (req, res) => {
   return res.json({ user });
 });
 
+router.post("/refresh", (req, res) => {
+  const token = getBearerToken(req.headers.authorization);
+  if (!token) {
+    return res.status(401).json({ error: "Missing bearer token." });
+  }
+
+  const userId = resolveUserIdFromToken(token);
+  if (!userId) {
+    return res.status(401).json({ error: "Token invalid or expired." });
+  }
+
+  const user = getUserById(userId);
+  if (!user) {
+    return res.status(404).json({ error: "User not found." });
+  }
+
+  const refreshedToken = issueAccessToken(user.id);
+  return res.json({
+    token: refreshedToken,
+    user: {
+      id: user.id,
+      githubUsername: user.githubUsername
+    }
+  });
+});
+
 export default router;
