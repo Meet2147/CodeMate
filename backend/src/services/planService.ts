@@ -10,53 +10,68 @@ export const planCatalog: Record<PlanCode, PlanLimits> = {
     period: "trial",
     priceUsd: 0
   },
-  pro_monthly: {
+  starter_monthly: {
     maxPeoplePerSession: 2,
-    maxSessionsPerPeriod: 300,
-    maxSessionsPerDay: 5,
+    maxSessionsPerPeriod: "unlimited",
+    maxSessionsPerDay: 3,
     sessionDurationMinutes: 50,
-    maxHoursTotal: 300,
-    carryForwardUnusedMinutes: true,
+    maxHoursTotal: "unlimited",
     period: "month",
-    priceUsd: 29.99
+    priceUsd: 39
+  },
+  starter_yearly: {
+    maxPeoplePerSession: 2,
+    maxSessionsPerPeriod: "unlimited",
+    maxSessionsPerDay: 3,
+    sessionDurationMinutes: 50,
+    maxHoursTotal: "unlimited",
+    period: "year",
+    priceUsd: 299
+  },
+  pro_monthly: {
+    maxPeoplePerSession: 5,
+    maxSessionsPerPeriod: "unlimited",
+    maxSessionsPerDay: 10,
+    sessionDurationMinutes: 100,
+    maxHoursTotal: "unlimited",
+    period: "month",
+    priceUsd: 149
   },
   pro_yearly: {
-    maxPeoplePerSession: 2,
+    maxPeoplePerSession: 5,
+    maxSessionsPerPeriod: "unlimited",
+    maxSessionsPerDay: 10,
+    sessionDurationMinutes: 100,
+    maxHoursTotal: "unlimited",
+    period: "year",
+    priceUsd: 1199
+  },
+  team_monthly: {
+    maxPeoplePerSession: 20,
     maxSessionsPerPeriod: "unlimited",
     maxSessionsPerDay: "unlimited",
-    sessionDurationMinutes: 50,
-    maxHoursTotal: 500,
-    softLimitHoursBeforeDailyThrottle: 300,
-    dailyThrottleSessionsAfterSoftLimit: 1,
-    period: "year",
-    priceUsd: 99
-  },
-  premium_monthly: {
-    maxPeoplePerSession: 10,
-    maxSessionsPerPeriod: "unlimited",
-    maxSessionsPerDay: 15,
-    sessionDurationMinutes: 50,
-    maxHoursTotal: 750,
+    sessionDurationMinutes: "unlimited",
+    maxHoursTotal: "unlimited",
     period: "month",
-    priceUsd: 199
+    priceUsd: 499
   },
-  premium_yearly: {
-    maxPeoplePerSession: 10,
+  team_yearly: {
+    maxPeoplePerSession: 20,
     maxSessionsPerPeriod: "unlimited",
     maxSessionsPerDay: "unlimited",
-    sessionDurationMinutes: 50,
-    maxHoursTotal: 1050,
+    sessionDurationMinutes: "unlimited",
+    maxHoursTotal: "unlimited",
     period: "year",
-    priceUsd: 349
+    priceUsd: 4999
   },
-  lifetime: {
-    maxPeoplePerSession: 10,
+  founder_lifetime: {
+    maxPeoplePerSession: 20,
     maxSessionsPerPeriod: "unlimited",
     maxSessionsPerDay: "unlimited",
     sessionDurationMinutes: "unlimited",
     maxHoursTotal: "unlimited",
     period: "lifetime",
-    priceUsd: 499
+    priceUsd: 999
   }
 };
 
@@ -93,7 +108,7 @@ export function validateSessionStart(plan: PlanCode, user: User, now: Date = new
       throw new Error("Total plan hours exhausted. Upgrade required.");
     }
     if (user.minutesConsumed + limits.sessionDurationMinutes > limits.maxHoursTotal * 60) {
-      throw new Error("Not enough remaining plan time for another 50-minute session.");
+      throw new Error("Not enough remaining plan time for another session.");
     }
   }
 }

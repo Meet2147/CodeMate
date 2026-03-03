@@ -6,11 +6,13 @@ const router = Router();
 const paypalEnv = String(process.env.PAYPAL_ENV || "sandbox").toLowerCase();
 
 const usdPriceByPlan: Record<string, string> = {
-  pro_monthly: "29.99",
-  pro_yearly: "99.00",
-  premium_monthly: "199.00",
-  premium_yearly: "349.00",
-  lifetime: "499.00"
+  starter_monthly: "39.00",
+  starter_yearly: "299.00",
+  pro_monthly: "149.00",
+  pro_yearly: "1199.00",
+  team_monthly: "499.00",
+  team_yearly: "4999.00",
+  founder_lifetime: "999.00"
 };
 
 function getPayPalBaseUrl(): string {

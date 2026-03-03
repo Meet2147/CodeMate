@@ -11,64 +11,89 @@ const API_BASE = (
 ).replace(/\/+$/, "");
 
 const catalog = {
+  starter: {
+    monthly: {
+      code: "starter_monthly",
+      title: "Starter Monthly",
+      price: "$39",
+      inrPrice: "INR 3,299",
+      features: [
+        "2 users per session",
+        "3 sessions per day",
+        "50 min per session",
+        "Built for students and solo coders"
+      ]
+    },
+    yearly: {
+      code: "starter_yearly",
+      title: "Starter Yearly",
+      price: "$299",
+      inrPrice: "INR 24,999",
+      features: [
+        "2 users per session",
+        "3 sessions per day",
+        "50 min per session",
+        "Best value for individual creators"
+      ]
+    }
+  },
   pro: {
     monthly: {
       code: "pro_monthly",
       title: "Pro Monthly",
-      price: "$29.99",
-      inrPrice: "INR 2,799",
+      price: "$149",
+      inrPrice: "INR 12,499",
       features: [
-        "2 users per session",
-        "5 sessions per day",
-        "50 min per session",
-        "300 total hours (unused minutes carry forward)"
+        "5 users per session",
+        "10 sessions per day",
+        "100 min per session",
+        "Session recording, analytics, and custom branding"
       ]
     },
     yearly: {
       code: "pro_yearly",
       title: "Pro Yearly",
-      price: "$99",
-      inrPrice: "INR 9,000",
+      price: "$1,199",
+      inrPrice: "INR 99,999",
       features: [
-        "2 users per session",
-        "Unlimited sessions/day",
-        "50 min per session",
-        "500 total hours",
-        "After 300 hours: restricted to 1 session/day"
+        "5 users per session",
+        "10 sessions per day",
+        "100 min per session",
+        "Session recording, analytics, and custom branding"
       ]
     }
   },
-  premium: {
+  team: {
     monthly: {
-      code: "premium_monthly",
-      title: "Premium Monthly",
-      price: "$199",
-      inrPrice: "INR 18,999",
+      code: "team_monthly",
+      title: "Team Monthly",
+      price: "$499",
+      inrPrice: "INR 41,999",
       features: [
-        "10 users per session",
-        "15 sessions per day",
-        "50 min per session",
-        "750 total hours"
+        "20 users per session",
+        "Unlimited sessions",
+        "Unlimited hours",
+        "Priority compute + admin dashboard + white-label option"
       ]
     },
     yearly: {
-      code: "premium_yearly",
-      title: "Premium Yearly",
-      price: "$349",
-      inrPrice: "INR 30,000",
+      code: "team_yearly",
+      title: "Team Yearly",
+      price: "$4,999",
+      inrPrice: "INR 4,14,999",
       features: [
-        "10 users per session",
-        "Unlimited sessions/day",
-        "50 min per session",
-        "1050 total hours"
+        "20 users per session",
+        "Unlimited sessions",
+        "Unlimited hours",
+        "Priority compute + admin dashboard + white-label option"
       ]
     }
   },
-  lifetime: {
-    code: "lifetime",
-    title: "Lifetime",
-    price: "$499",
-    inrPrice: "INR 45,000"
+  founder_lifetime: {
+    code: "founder_lifetime",
+    title: "Founder Lifetime",
+    price: "$999",
+    inrPrice: "INR 82,999"
   }
 };
 
@@ -99,7 +124,7 @@ function startGitHubAuth() {
   window.location.href = `${API_BASE}/auth/github/start?redirect_uri=${encodeURIComponent(redirectUri)}`;
 }
 
-let selectedTier = "pro";
+let selectedTier = "starter";
 let selectedCycle = "monthly";
 
 const planTitleNode = document.querySelector("#planTitle");
@@ -110,8 +135,9 @@ const authStatusNode = document.querySelector("#authStatus");
 const checkoutNoteNode = document.querySelector("#checkoutNote");
 
 function updateTierButtons() {
+  document.querySelector("#starterTab").classList.toggle("active", selectedTier === "starter");
   document.querySelector("#proTab").classList.toggle("active", selectedTier === "pro");
-  document.querySelector("#premiumTab").classList.toggle("active", selectedTier === "premium");
+  document.querySelector("#teamTab").classList.toggle("active", selectedTier === "team");
 }
 
 function renderPlan() {
@@ -167,8 +193,14 @@ document.querySelector("#proTab").addEventListener("click", () => {
   renderPlan();
 });
 
-document.querySelector("#premiumTab").addEventListener("click", () => {
-  selectedTier = "premium";
+document.querySelector("#starterTab").addEventListener("click", () => {
+  selectedTier = "starter";
+  updateTierButtons();
+  renderPlan();
+});
+
+document.querySelector("#teamTab").addEventListener("click", () => {
+  selectedTier = "team";
   updateTierButtons();
   renderPlan();
 });
@@ -190,7 +222,7 @@ document.querySelector("#checkoutBtn").addEventListener("click", () => {
 });
 
 document.querySelector("#lifetimeCheckoutBtn").addEventListener("click", () => {
-  startCheckout(catalog.lifetime).catch((error) => {
+  startCheckout(catalog.founder_lifetime).catch((error) => {
     alert(error.message || "Checkout failed");
   });
 });

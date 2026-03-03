@@ -1,10 +1,12 @@
 export type PlanCode =
   | "trial"
+  | "starter_monthly"
+  | "starter_yearly"
   | "pro_monthly"
   | "pro_yearly"
-  | "premium_monthly"
-  | "premium_yearly"
-  | "lifetime";
+  | "team_monthly"
+  | "team_yearly"
+  | "founder_lifetime";
 
 export type InviteStatus = "pending" | "accepted" | "declined";
 
