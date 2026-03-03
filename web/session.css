@@ -1,25 +1,26 @@
-@import url("https://fonts.googleapis.com/css2?family=Sora:wght@500;700;800&family=Space+Grotesk:wght@400;500;700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap");
 
 :root {
-  --bg-1: #ffffff;
-  --bg-2: #f7f9ff;
-  --pane: #ffffff;
-  --card: #ffffff;
-  --ink: #0f1b33;
-  --muted: #5e6f8f;
-  --accent: #4c6fff;
-  --line: rgba(134, 160, 209, 0.35);
+  --bg: #050711;
+  --pane: rgba(9, 16, 38, 0.76);
+  --card: rgba(9, 16, 38, 0.8);
+  --ink: #eaf1ff;
+  --muted: #9db1d9;
+  --accent: #5f6dff;
+  --accent-2: #7d5dff;
+  --line: rgba(145, 178, 255, 0.24);
 }
 
-* {
-  box-sizing: border-box;
-}
+* { box-sizing: border-box; }
 
 body {
   margin: 0;
-  font-family: "Space Grotesk", sans-serif;
+  font-family: "Manrope", sans-serif;
   color: var(--ink);
-  background: #ffffff;
+  background:
+    radial-gradient(circle at 12% 6%, rgba(96, 132, 255, 0.22) 0%, rgba(96, 132, 255, 0) 34%),
+    radial-gradient(circle at 86% 1%, rgba(96, 198, 255, 0.16) 0%, rgba(96, 198, 255, 0) 34%),
+    linear-gradient(180deg, #070c1f 0%, #04060f 100%);
 }
 
 .workspace {
@@ -35,6 +36,7 @@ body {
   border: 1px solid var(--line);
   border-radius: 16px;
   padding: 12px;
+  backdrop-filter: blur(10px);
 }
 
 .code-pane {
@@ -50,8 +52,8 @@ body {
 
 .pane-header h1 {
   margin: 0;
-  font-family: "Sora", sans-serif;
-  font-size: 1.3rem;
+  font-family: "Plus Jakarta Sans", sans-serif;
+  font-size: 1.35rem;
 }
 
 .pane-header p {
@@ -61,13 +63,11 @@ body {
 
 #problemContext {
   margin-top: 6px;
-  color: #486896;
+  color: #c8d8ff;
   font-size: 0.9rem;
 }
 
-#problemContext a {
-  color: #385f9d;
-}
+#problemContext a { color: #a5c8ff; }
 
 .editor-wrap {
   display: grid;
@@ -85,7 +85,7 @@ body {
 
 .editor-toolbar p {
   margin: 0;
-  font-size: 0.88rem;
+  font-size: 0.9rem;
   color: var(--muted);
 }
 
@@ -100,32 +100,30 @@ select,
 #packageInput,
 button {
   border-radius: 10px;
-  border: 1px solid #3f6496;
-  background: #f5f8ff;
-  color: #1d3760;
+  border: 1px solid rgba(130, 159, 236, 0.38);
+  background: rgba(7, 14, 32, 0.85);
+  color: #e7f0ff;
   padding: 9px 10px;
   font-weight: 700;
 }
 
 button {
-  background: var(--accent);
+  background: linear-gradient(128deg, var(--accent), var(--accent-2));
   border: 0;
   color: #fff;
   cursor: pointer;
 }
 
-#packageInput {
-  min-width: 260px;
-}
+#packageInput { min-width: 260px; }
 
 #codeEditor {
   width: 100%;
   height: 100%;
-  min-height: 340px;
+  min-height: 360px;
   resize: none;
   border-radius: 13px;
-  border: 1px solid #3b5d8b;
-  background: #0d1630;
+  border: 1px solid rgba(130, 159, 236, 0.38);
+  background: #080f25;
   color: #f2f8ff;
   font-family: "SFMono-Regular", Menlo, Consolas, monospace;
   font-size: 14px;
@@ -139,9 +137,9 @@ button {
   max-height: 250px;
   overflow: auto;
   border-radius: 12px;
-  border: 1px solid #3b5d8b;
-  background: #111b36;
-  color: #b5f2ff;
+  border: 1px solid rgba(130, 159, 236, 0.38);
+  background: #0a132e;
+  color: #bdf3ff;
   font-family: "SFMono-Regular", Menlo, Consolas, monospace;
   font-size: 12px;
   line-height: 1.45;
@@ -157,8 +155,8 @@ button {
 
 .card h2 {
   margin: 0 0 8px;
-  font-family: "Sora", sans-serif;
-  font-size: 0.94rem;
+  font-family: "Plus Jakarta Sans", sans-serif;
+  font-size: 0.95rem;
 }
 
 video {
@@ -172,17 +170,15 @@ video {
 #participantsList {
   margin: 0;
   padding-left: 18px;
-  color: var(--muted);
+  color: #d0ddff;
 }
 
-#participantsList li {
-  margin-bottom: 3px;
-}
+#participantsList li { margin-bottom: 3px; }
 
 .controls p {
   margin: 0;
   color: var(--muted);
-  font-size: 0.83rem;
+  font-size: 0.84rem;
 }
 
 .actions {
@@ -204,30 +200,18 @@ video {
 }
 
 @media (max-width: 1030px) {
-  .workspace {
-    grid-template-columns: 1fr;
-  }
+  .workspace { grid-template-columns: 1fr; }
 
-  .media-pane {
-    grid-template-columns: 1fr 1fr;
-  }
+  .media-pane { grid-template-columns: 1fr 1fr; }
 
   .participants,
-  .controls {
-    grid-column: 1 / -1;
-  }
+  .controls { grid-column: 1 / -1; }
 }
 
 @media (max-width: 700px) {
-  .workspace {
-    padding: 8px;
-  }
+  .workspace { padding: 8px; }
 
-  .media-pane {
-    grid-template-columns: 1fr;
-  }
+  .media-pane { grid-template-columns: 1fr; }
 
-  #packageInput {
-    min-width: 180px;
-  }
+  #packageInput { min-width: 180px; }
 }
