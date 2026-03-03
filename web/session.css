@@ -1,14 +1,14 @@
 @import url("https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap");
 
 :root {
-  --bg: #050711;
-  --pane: rgba(9, 16, 38, 0.76);
-  --card: rgba(9, 16, 38, 0.8);
-  --ink: #eaf1ff;
-  --muted: #9db1d9;
-  --accent: #5f6dff;
-  --accent-2: #7d5dff;
-  --line: rgba(145, 178, 255, 0.24);
+  --bg: #ffffff;
+  --pane: #ffffff;
+  --card: #ffffff;
+  --ink: #0f1b33;
+  --muted: #5f7192;
+  --accent: #5c6cff;
+  --accent-2: #4aa5ff;
+  --line: #dbe7ff;
 }
 
 * { box-sizing: border-box; }
@@ -18,9 +18,9 @@ body {
   font-family: "Manrope", sans-serif;
   color: var(--ink);
   background:
-    radial-gradient(circle at 12% 6%, rgba(96, 132, 255, 0.22) 0%, rgba(96, 132, 255, 0) 34%),
-    radial-gradient(circle at 86% 1%, rgba(96, 198, 255, 0.16) 0%, rgba(96, 198, 255, 0) 34%),
-    linear-gradient(180deg, #070c1f 0%, #04060f 100%);
+    radial-gradient(circle at 12% 6%, rgba(96, 132, 255, 0.12) 0%, rgba(96, 132, 255, 0) 34%),
+    radial-gradient(circle at 86% 1%, rgba(74, 165, 255, 0.1) 0%, rgba(74, 165, 255, 0) 34%),
+    linear-gradient(180deg, #fff 0%, #f6f9ff 100%);
 }
 
 .workspace {
@@ -36,7 +36,6 @@ body {
   border: 1px solid var(--line);
   border-radius: 16px;
   padding: 12px;
-  backdrop-filter: blur(10px);
 }
 
 .code-pane {
@@ -63,11 +62,11 @@ body {
 
 #problemContext {
   margin-top: 6px;
-  color: #c8d8ff;
+  color: #48689b;
   font-size: 0.9rem;
 }
 
-#problemContext a { color: #a5c8ff; }
+#problemContext a { color: #3460a4; }
 
 .editor-wrap {
   display: grid;
@@ -100,9 +99,9 @@ select,
 #packageInput,
 button {
   border-radius: 10px;
-  border: 1px solid rgba(130, 159, 236, 0.38);
-  background: rgba(7, 14, 32, 0.85);
-  color: #e7f0ff;
+  border: 1px solid #c9ddff;
+  background: #f6faff;
+  color: #1e3f73;
   padding: 9px 10px;
   font-weight: 700;
 }
@@ -122,8 +121,8 @@ button {
   min-height: 360px;
   resize: none;
   border-radius: 13px;
-  border: 1px solid rgba(130, 159, 236, 0.38);
-  background: #080f25;
+  border: 1px solid #c9ddff;
+  background: #07193f;
   color: #f2f8ff;
   font-family: "SFMono-Regular", Menlo, Consolas, monospace;
   font-size: 14px;
@@ -137,9 +136,9 @@ button {
   max-height: 250px;
   overflow: auto;
   border-radius: 12px;
-  border: 1px solid rgba(130, 159, 236, 0.38);
-  background: #0a132e;
-  color: #bdf3ff;
+  border: 1px solid #c9ddff;
+  background: #0b214f;
+  color: #d5f8ff;
   font-family: "SFMono-Regular", Menlo, Consolas, monospace;
   font-size: 12px;
   line-height: 1.45;
@@ -170,7 +169,7 @@ video {
 #participantsList {
   margin: 0;
   padding-left: 18px;
-  color: #d0ddff;
+  color: #35527f;
 }
 
 #participantsList li { margin-bottom: 3px; }

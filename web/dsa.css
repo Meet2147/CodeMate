@@ -1,13 +1,13 @@
 @import url("https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap");
 
 :root {
-  --bg: #050711;
-  --ink: #eaf1ff;
-  --muted: #9db1d9;
-  --accent: #5f6dff;
-  --accent-2: #7d5dff;
-  --line: rgba(145, 178, 255, 0.24);
-  --card: rgba(9, 16, 38, 0.76);
+  --bg: #ffffff;
+  --ink: #0f1b33;
+  --muted: #5f7192;
+  --accent: #5c6cff;
+  --accent-2: #4aa5ff;
+  --line: #dbe7ff;
+  --card: #ffffff;
 }
 
 * { box-sizing: border-box; }
@@ -24,9 +24,9 @@ body {
   inset: 0;
   pointer-events: none;
   background:
-    radial-gradient(circle at 12% 8%, rgba(96, 132, 255, 0.2) 0%, rgba(96, 132, 255, 0) 35%),
-    radial-gradient(circle at 88% 4%, rgba(96, 198, 255, 0.16) 0%, rgba(96, 198, 255, 0) 38%),
-    linear-gradient(180deg, #070c1f 0%, #04060f 100%);
+    radial-gradient(circle at 12% 8%, rgba(95, 123, 255, 0.12) 0%, rgba(95, 123, 255, 0) 35%),
+    radial-gradient(circle at 88% 4%, rgba(74, 165, 255, 0.1) 0%, rgba(74, 165, 255, 0) 38%),
+    linear-gradient(180deg, #fff 0%, #f6f9ff 100%);
 }
 
 .dsa-shell {
@@ -43,7 +43,7 @@ body {
   background: var(--card);
   border: 1px solid var(--line);
   border-radius: 16px;
-  backdrop-filter: blur(10px);
+  box-shadow: 0 12px 34px rgba(22, 48, 94, 0.08);
 }
 
 .topbar {
@@ -55,7 +55,7 @@ body {
 
 .brand {
   text-decoration: none;
-  color: #f6f9ff;
+  color: #0f1b33;
   font-family: "Plus Jakarta Sans", sans-serif;
   font-weight: 800;
   font-size: 1.3rem;
@@ -76,9 +76,9 @@ button {
 }
 
 nav a {
-  background: transparent;
-  border: 1px solid rgba(139, 170, 255, 0.32);
-  color: #d9e5ff;
+  background: #f6faff;
+  border: 1px solid #ccdeff;
+  color: #284775;
 }
 
 .hero { padding: 16px; }
@@ -87,7 +87,7 @@ nav a {
   margin: 0;
   text-transform: uppercase;
   letter-spacing: 0.12em;
-  color: #b8c9ff;
+  color: #4e6ecb;
   font-weight: 800;
   font-size: 0.78rem;
 }
@@ -109,7 +109,7 @@ nav a {
 label {
   display: grid;
   gap: 5px;
-  color: #cfddf8;
+  color: #284775;
   font-size: 0.9rem;
 }
 
@@ -117,10 +117,10 @@ select,
 input,
 textarea,
 pre {
-  border: 1px solid rgba(130, 159, 236, 0.4);
+  border: 1px solid #ccdeff;
   border-radius: 10px;
-  background: rgba(7, 14, 32, 0.8);
-  color: #eaf2ff;
+  background: #f8fbff;
+  color: #1b3a6a;
   padding: 10px;
 }
 
@@ -149,13 +149,13 @@ pre {
   border-radius: 999px;
   padding: 4px 8px;
   font-size: 0.75rem;
-  background: rgba(121, 151, 210, 0.22);
-  border: 1px solid rgba(129, 159, 235, 0.38);
+  background: #eef4ff;
+  border: 1px solid #d4e4ff;
 }
 
-.tag.easy { color: #89f2bf; }
-.tag.medium { color: #ffd67e; }
-.tag.hard { color: #ff9a9a; }
+.tag.easy { color: #249e66; }
+.tag.medium { color: #b07b00; }
+.tag.hard { color: #ba2f49; }
 
 .problem-card a {
   justify-self: start;
@@ -181,24 +181,18 @@ pre {
 }
 
 .link-panel { padding: 14px; }
-
 .full-width { grid-column: 1 / -1; }
 
-.link-panel h2 {
-  margin: 0;
-  font-family: "Plus Jakarta Sans", sans-serif;
-}
-
-.link-panel p { color: #d7e5ff; }
-
+.link-panel h2,
 .statement h2,
 .statement h3 {
   margin: 8px 0;
   font-family: "Plus Jakarta Sans", sans-serif;
 }
 
+.link-panel p,
 .statement p,
-.statement ul { color: #d7e5ff; }
+.statement ul { color: #35527f; }
 
 .statement ul { margin: 0; }
 
@@ -208,11 +202,11 @@ pre {
 }
 
 .example-box {
-  border: 1px solid rgba(130, 159, 236, 0.4);
+  border: 1px solid #d4e4ff;
   border-radius: 10px;
   padding: 10px;
   margin-bottom: 8px;
-  background: rgba(7, 14, 32, 0.78);
+  background: #f8fbff;
 }
 
 .toolbar {
@@ -250,19 +244,19 @@ pre {
 }
 
 .test-item {
-  border: 1px solid rgba(130, 159, 236, 0.4);
+  border: 1px solid #d4e4ff;
   border-radius: 10px;
   padding: 8px;
-  background: rgba(7, 14, 32, 0.75);
+  background: #f8fbff;
 }
 
-.test-item.pass { border-color: #2f9a6b; }
-.test-item.fail { border-color: #ba4c4c; }
+.test-item.pass { border-color: #44b581; }
+.test-item.fail { border-color: #e16a80; }
 
 .test-item p {
   margin: 0 0 4px;
   font-size: 0.85rem;
-  color: #d4e3ff;
+  color: #35527f;
 }
 
 .empty { color: var(--muted); }
