@@ -59,6 +59,14 @@ body {
   font-family: "Plus Jakarta Sans", sans-serif;
   font-weight: 800;
   font-size: 1.3rem;
+  display: inline-flex;
+  align-items: center;
+}
+
+.brand img {
+  height: 34px;
+  width: auto;
+  display: block;
 }
 
 nav { display: flex; gap: 10px; align-items: center; }
