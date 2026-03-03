@@ -46,65 +46,20 @@
 
         <div class="hero-mock glass">
           <div class="mock-head">
-            <p>Session Command Center</p>
-            <span>Connected • low latency</span>
+            <p>Live Terminal</p>
+            <span>typing demo</span>
           </div>
-          <div class="mock-grid">
-            <section class="mock-card mock-code">
-              <h4>Live Code Snapshot</h4>
-              <p>// binary_search.py</p>
-              <p>def search(nums, target):</p>
-              <p>&nbsp;&nbsp;lo, hi = 0, len(nums) - 1</p>
-              <p>&nbsp;&nbsp;while lo &lt;= hi:</p>
-              <p>&nbsp;&nbsp;&nbsp;&nbsp;mid = (lo + hi) // 2</p>
-            </section>
-            <section class="mock-card mock-activity">
-              <h4>Room Activity</h4>
-              <ul>
-                <li><strong>@meet2147</strong> invited <strong>@partner</strong></li>
-                <li>DSA linked: <strong>Binary Search</strong></li>
-                <li>Run tests: <strong>6/8 passed</strong></li>
-                <li>Mic active for both users</li>
-              </ul>
-            </section>
-            <section class="mock-card mock-people">
-              <h4>Participants</h4>
-              <div class="participant-pill">
-                <span class="dot online"></span>
-                @meet2147
-              </div>
-              <div class="participant-pill">
-                <span class="dot online"></span>
-                @partner
-              </div>
-              <div class="mini-grid self">
-                <span></span>
-                <span></span>
-                <span></span>
-              </div>
-            </section>
-            <section class="mock-card mock-metrics">
-              <h4>Session Stats</h4>
-              <div class="metric-row">
-                <div>
-                  <small>Runtime</small>
-                  <strong>18m</strong>
-                </div>
-                <div>
-                  <small>Edits</small>
-                  <strong>42</strong>
-                </div>
-                <div>
-                  <small>Voice</small>
-                  <strong>Stable</strong>
-                </div>
-              </div>
-              <div class="status-track">
-                <span></span>
-                <span></span>
-                <span></span>
-              </div>
-            </section>
+          <div class="terminal-shell">
+            <div class="terminal-topbar">
+              <span></span><span></span><span></span>
+            </div>
+            <div class="terminal-body">
+              <p class="terminal-line">$ boot codemate --mode=pair</p>
+              <p class="terminal-line terminal-muted">Initializing secure room...</p>
+              <p class="terminal-line terminal-muted">Attaching editor and media stream...</p>
+              <p class="terminal-type"><span class="typed-word">CodeMate</span><span class="cursor">|</span></p>
+              <p class="terminal-line terminal-ok">Room status: ready</p>
+            </div>
           </div>
         </div>
       </section>
