@@ -124,28 +124,29 @@ function startGitHubAuth() {
   window.location.href = `${API_BASE}/auth/github/start?redirect_uri=${encodeURIComponent(redirectUri)}`;
 }
 
-let selectedTier = "starter";
 let selectedCycle = "monthly";
 
-const planTitleNode = document.querySelector("#planTitle");
-const planPriceNode = document.querySelector("#planPrice");
-const planLocalPriceNode = document.querySelector("#planLocalPrice");
-const planFeaturesNode = document.querySelector("#planFeatures");
 const authStatusNode = document.querySelector("#authStatus");
 const checkoutNoteNode = document.querySelector("#checkoutNote");
+const tierCards = document.querySelectorAll(".tier-card");
 
-function updateTierButtons() {
-  document.querySelector("#starterTab").classList.toggle("active", selectedTier === "starter");
-  document.querySelector("#proTab").classList.toggle("active", selectedTier === "pro");
-  document.querySelector("#teamTab").classList.toggle("active", selectedTier === "team");
-}
+function renderPlans() {
+  tierCards.forEach((card) => {
+    const tier = String(card.getAttribute("data-tier") || "").trim();
+    const tierCatalog = catalog[tier];
+    if (!tierCatalog) return;
+    const plan = tierCatalog[selectedCycle];
+    if (!plan) return;
 
-function renderPlan() {
-  const plan = catalog[selectedTier][selectedCycle];
-  planTitleNode.textContent = plan.title;
-  planPriceNode.textContent = plan.price;
-  planLocalPriceNode.textContent = plan.inrPrice;
-  planFeaturesNode.innerHTML = plan.features.map((item) => `<li>${item}</li>`).join("");
+    const priceNode = card.querySelector('[data-field="price"]');
+    const inrNode = card.querySelector('[data-field="inr"]');
+    const featuresNode = card.querySelector('[data-field="features"]');
+    if (priceNode) priceNode.textContent = plan.price;
+    if (inrNode) inrNode.textContent = plan.inrPrice;
+    if (featuresNode) {
+      featuresNode.innerHTML = plan.features.map((item) => `<li>${item}</li>`).join("");
+    }
+  });
 }
 
 async function startCheckout(plan) {
@@ -182,42 +183,29 @@ storeAuthFromUrlIfPresent();
 const auth = getAuth();
 authStatusNode.textContent = auth?.githubUsername ? `Signed in as @${auth.githubUsername}` : "Not signed in";
 
-updateTierButtons();
-renderPlan();
+renderPlans();
 
 document.querySelector("#loginBtn").addEventListener("click", startGitHubAuth);
-
-document.querySelector("#proTab").addEventListener("click", () => {
-  selectedTier = "pro";
-  updateTierButtons();
-  renderPlan();
-});
-
-document.querySelector("#starterTab").addEventListener("click", () => {
-  selectedTier = "starter";
-  updateTierButtons();
-  renderPlan();
-});
-
-document.querySelector("#teamTab").addEventListener("click", () => {
-  selectedTier = "team";
-  updateTierButtons();
-  renderPlan();
-});
 
 document.querySelectorAll('input[name="billing"]').forEach((input) => {
   input.addEventListener("change", (event) => {
     const target = event.target;
     if (!(target instanceof HTMLInputElement)) return;
     selectedCycle = target.value;
-    renderPlan();
+    renderPlans();
   });
 });
 
-document.querySelector("#checkoutBtn").addEventListener("click", () => {
-  const plan = catalog[selectedTier][selectedCycle];
-  startCheckout(plan).catch((error) => {
-    alert(error.message || "Checkout failed");
+document.querySelectorAll("[data-checkout-tier]").forEach((button) => {
+  button.addEventListener("click", (event) => {
+    const target = event.currentTarget;
+    if (!(target instanceof HTMLElement)) return;
+    const tier = String(target.dataset.checkoutTier || "").trim();
+    const plan = catalog[tier]?.[selectedCycle];
+    if (!plan) return;
+    startCheckout(plan).catch((error) => {
+      alert(error.message || "Checkout failed");
+    });
   });
 });
 

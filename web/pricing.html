@@ -31,12 +31,6 @@
       </section>
 
       <section class="controls glass">
-        <div class="segment" role="tablist" aria-label="Plan Type">
-          <button id="starterTab" class="active" type="button">Starter</button>
-          <button id="proTab" type="button">Pro</button>
-          <button id="teamTab" type="button">Team</button>
-        </div>
-
         <fieldset class="billing-cycle">
           <legend>Billing Cycle</legend>
           <label>
@@ -50,20 +44,43 @@
         </fieldset>
       </section>
 
-      <section class="cards">
-        <article class="main-card glass">
+      <section class="tier-grid">
+        <article class="tier-card glass" data-tier="starter">
           <div class="plan-head">
-            <h2 id="planTitle">Starter Monthly</h2>
-            <p id="planPrice" class="price">$39</p>
+            <h2>Starter</h2>
+            <p class="price" data-field="price">$39</p>
           </div>
-          <p id="planLocalPrice" class="local-price">INR 3,299</p>
-          <ul id="planFeatures"></ul>
-          <button id="checkoutBtn">Start 7-Day Free Trial</button>
-          <p class="checkout-note" id="checkoutNote">
-            No payment charged today. After trial, pay securely with PayPal (USD).
-          </p>
+          <p class="local-price" data-field="inr">INR 3,299</p>
+          <ul data-field="features"></ul>
+          <button data-checkout-tier="starter">Start 7-Day Free Trial</button>
         </article>
 
+        <article class="tier-card glass featured" data-tier="pro">
+          <div class="plan-head">
+            <h2>Pro</h2>
+            <p class="price" data-field="price">$149</p>
+          </div>
+          <p class="local-price" data-field="inr">INR 12,499</p>
+          <ul data-field="features"></ul>
+          <button data-checkout-tier="pro">Start 7-Day Free Trial</button>
+        </article>
+
+        <article class="tier-card glass" data-tier="team">
+          <div class="plan-head">
+            <h2>Team</h2>
+            <p class="price" data-field="price">$499</p>
+          </div>
+          <p class="local-price" data-field="inr">INR 41,999</p>
+          <ul data-field="features"></ul>
+          <button data-checkout-tier="team">Start 7-Day Free Trial</button>
+        </article>
+      </section>
+
+      <p class="checkout-note" id="checkoutNote">
+        No payment charged today. After trial, pay securely with PayPal (USD).
+      </p>
+
+      <section class="cards">
         <article class="side-card glass">
           <p class="badge">Launch-only</p>
           <h3>Founder Lifetime</h3>
