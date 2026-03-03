@@ -274,6 +274,81 @@ button,
   font-size: 0.92rem;
 }
 
+.clips-section {
+  padding: 14px;
+  display: grid;
+  gap: 12px;
+}
+
+.clips-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: end;
+  gap: 16px;
+}
+
+.clips-head h3 {
+  margin: 6px 0 0;
+  font-family: "Plus Jakarta Sans", sans-serif;
+  font-size: clamp(1.2rem, 2.8vw, 1.9rem);
+}
+
+.clips-head p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.92rem;
+}
+
+.clips-rail {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(240px, 300px);
+  gap: 10px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+  scroll-snap-type: x mandatory;
+}
+
+.clips-rail::-webkit-scrollbar {
+  height: 8px;
+}
+
+.clips-rail::-webkit-scrollbar-thumb {
+  background: #cfe0ff;
+  border-radius: 999px;
+}
+
+.clip-card {
+  scroll-snap-align: start;
+  border: 1px solid #d8e6ff;
+  border-radius: 16px;
+  background: #f9fbff;
+  padding: 10px;
+  display: grid;
+  gap: 8px;
+}
+
+.clip-card video {
+  width: 100%;
+  aspect-ratio: 16 / 10;
+  object-fit: cover;
+  border-radius: 12px;
+  border: 1px solid #d5e4ff;
+  background: #edf4ff;
+}
+
+.clip-card h4 {
+  margin: 0;
+  font-family: "Plus Jakarta Sans", sans-serif;
+  font-size: 1rem;
+}
+
+.clip-card p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
 .feature-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -323,6 +398,11 @@ button,
   .stats-strip,
   .feature-grid {
     grid-template-columns: 1fr;
+  }
+
+  .clips-head {
+    flex-direction: column;
+    align-items: flex-start;
   }
 }
 
