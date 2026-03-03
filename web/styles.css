@@ -274,79 +274,67 @@ button,
   font-size: 0.92rem;
 }
 
-.clips-section {
-  padding: 14px;
+.demo-section {
   display: grid;
-  gap: 12px;
+  gap: 26px;
+  padding: 6px 0;
 }
 
-.clips-head {
-  display: flex;
-  justify-content: space-between;
-  align-items: end;
-  gap: 16px;
+.demo-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 28px;
+  align-items: center;
+  padding: 22px 8px;
+  border-top: 1px solid #e3edff;
 }
 
-.clips-head h3 {
-  margin: 6px 0 0;
+.demo-row:first-child {
+  border-top: 0;
+}
+
+.demo-row.reverse .demo-copy {
+  order: 2;
+}
+
+.demo-row.reverse .demo-media {
+  order: 1;
+}
+
+.demo-copy h3 {
+  margin: 8px 0;
   font-family: "Plus Jakarta Sans", sans-serif;
-  font-size: clamp(1.2rem, 2.8vw, 1.9rem);
+  font-size: clamp(1.5rem, 3vw, 2.2rem);
+  line-height: 1.1;
 }
 
-.clips-head p {
+.demo-copy p {
   margin: 0;
   color: var(--muted);
-  font-size: 0.92rem;
+  font-size: 1.03rem;
+  max-width: 540px;
 }
 
-.clips-rail {
+.demo-media {
   display: grid;
-  grid-auto-flow: column;
-  grid-auto-columns: minmax(240px, 300px);
-  gap: 10px;
-  overflow-x: auto;
-  padding-bottom: 4px;
-  scroll-snap-type: x mandatory;
+  justify-items: center;
 }
 
-.clips-rail::-webkit-scrollbar {
-  height: 8px;
+.media-shell {
+  width: min(100%, 520px);
+  border-radius: 24px;
+  padding: 12px;
+  background: linear-gradient(140deg, rgba(98, 113, 255, 0.26), rgba(74, 165, 255, 0.2));
+  box-shadow: 0 26px 46px rgba(41, 69, 119, 0.16);
 }
 
-.clips-rail::-webkit-scrollbar-thumb {
-  background: #cfe0ff;
-  border-radius: 999px;
-}
-
-.clip-card {
-  scroll-snap-align: start;
-  border: 1px solid #d8e6ff;
-  border-radius: 16px;
-  background: #f9fbff;
-  padding: 10px;
-  display: grid;
-  gap: 8px;
-}
-
-.clip-card video {
+.media-shell video {
   width: 100%;
-  aspect-ratio: 16 / 10;
+  aspect-ratio: 16 / 9;
   object-fit: cover;
-  border-radius: 12px;
+  border-radius: 16px;
   border: 1px solid #d5e4ff;
-  background: #edf4ff;
-}
-
-.clip-card h4 {
-  margin: 0;
-  font-family: "Plus Jakarta Sans", sans-serif;
-  font-size: 1rem;
-}
-
-.clip-card p {
-  margin: 0;
-  color: var(--muted);
-  font-size: 0.9rem;
+  background: #f1f6ff;
 }
 
 .feature-grid {
@@ -400,9 +388,15 @@ button,
     grid-template-columns: 1fr;
   }
 
-  .clips-head {
-    flex-direction: column;
-    align-items: flex-start;
+  .demo-row {
+    grid-template-columns: 1fr;
+    gap: 14px;
+    padding: 14px 0;
+  }
+
+  .demo-row.reverse .demo-copy,
+  .demo-row.reverse .demo-media {
+    order: initial;
   }
 }
 
