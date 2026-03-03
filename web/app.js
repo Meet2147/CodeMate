@@ -68,7 +68,9 @@ refreshAuthTokenIfPossible();
 
 const authStatus = document.querySelector("#authStatus");
 const auth = getAuth();
-authStatus.textContent = auth?.githubUsername ? `Signed in as @${auth.githubUsername}` : "Not signed in";
+if (authStatus) {
+  authStatus.textContent = auth?.githubUsername ? `Signed in as @${auth.githubUsername}` : "Not signed in";
+}
 
 document.querySelector("#loginBtn").addEventListener("click", startGitHubAuth);
-document.querySelector("#heroLoginBtn").addEventListener("click", startGitHubAuth);
+document.querySelector("#heroLoginBtn")?.addEventListener("click", startGitHubAuth);
