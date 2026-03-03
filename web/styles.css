@@ -230,6 +230,17 @@ button,
   box-shadow: 0 18px 38px rgba(7, 21, 47, 0.35);
 }
 
+.minimal-terminal {
+  padding: 18px;
+}
+
+.minimal-terminal-shell {
+  min-height: 460px;
+  display: grid;
+  place-items: center;
+  background: #09152f;
+}
+
 .terminal-topbar {
   display: flex;
   align-items: center;
@@ -261,6 +272,21 @@ button,
   font-family: "SFMono-Regular", Menlo, Consolas, monospace;
   color: #b7d8ff;
   font-size: 0.96rem;
+}
+
+.solo-type {
+  line-height: 1;
+}
+
+.solo-type .typed-word {
+  font-size: clamp(2.4rem, 7vw, 5rem);
+  color: #b7c7ff;
+  animation: typeWord 2.8s steps(8, end) 0.5s infinite alternate;
+}
+
+.solo-type .cursor {
+  font-size: clamp(2.4rem, 7vw, 5rem);
+  color: #b7c7ff;
 }
 
 .terminal-muted {
@@ -437,6 +463,10 @@ button,
   .mock-layout { grid-template-columns: 1fr; }
 
   .terminal-shell {
+    min-height: 300px;
+  }
+
+  .minimal-terminal-shell {
     min-height: 300px;
   }
 
