@@ -221,11 +221,113 @@ button,
   gap: 10px;
 }
 
+.mock-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 10px;
+}
+
 .mock-editor,
 .mock-video {
   border-radius: 14px;
   border: 1px solid #cfe0ff;
   background: #fff;
+}
+
+.mock-card {
+  border-radius: 14px;
+  border: 1px solid #cfe0ff;
+  background: #fff;
+  padding: 10px;
+}
+
+.mock-card h4 {
+  margin: 0 0 8px;
+  font-size: 0.88rem;
+  color: #28487f;
+}
+
+.mock-code p {
+  margin: 0 0 6px;
+  font-family: "SFMono-Regular", Menlo, Consolas, monospace;
+  font-size: 0.8rem;
+  color: #36578f;
+}
+
+.mock-activity ul {
+  margin: 0;
+  padding-left: 16px;
+  color: #516894;
+  font-size: 0.8rem;
+  display: grid;
+  gap: 6px;
+}
+
+.mock-activity strong {
+  color: #25457a;
+}
+
+.participant-pill {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid #d8e6ff;
+  border-radius: 10px;
+  padding: 6px 8px;
+  font-size: 0.82rem;
+  color: #2d4d81;
+  margin-bottom: 6px;
+  font-weight: 700;
+}
+
+.dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  display: inline-block;
+}
+
+.dot.online {
+  background: #2ac36a;
+  box-shadow: 0 0 0 4px rgba(42, 195, 106, 0.15);
+}
+
+.metric-row {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.metric-row div {
+  border: 1px solid #d8e6ff;
+  border-radius: 10px;
+  padding: 7px 8px;
+  display: grid;
+  gap: 3px;
+}
+
+.metric-row small {
+  color: #6580ad;
+  font-size: 0.7rem;
+}
+
+.metric-row strong {
+  color: #294a80;
+  font-size: 0.82rem;
+}
+
+.status-track {
+  margin-top: 8px;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 6px;
+}
+
+.status-track span {
+  display: block;
+  border-radius: 999px;
+  height: 7px;
+  background: linear-gradient(90deg, #5d75ff, #5db6ff);
 }
 
 .mock-editor { padding: 12px; }
@@ -415,7 +517,8 @@ button,
 
   nav { flex-wrap: wrap; }
 
-  .mock-layout { grid-template-columns: 1fr; }
+  .mock-layout,
+  .mock-grid { grid-template-columns: 1fr; }
 
   .cta-panel {
     flex-direction: column;
