@@ -1,5 +1,5 @@
 import { randomUUID } from "node:crypto";
-import { canStartAnotherSession, planCatalog } from "./planService.js";
+import { planCatalog, validateSessionStart } from "./planService.js";
 import { CodingSession, InviteStatus, PairInvite, User } from "../types/domain.js";
 
 const users = new Map<string, User>();
@@ -18,6 +18,8 @@ function seedUser(username: string): User {
     githubUsername: username,
     planCode: "trial",
     sessionsUsed: 0,
+    sessionsStartedHistory: [],
+    minutesConsumed: 0,
     trialEndsAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString()
   };
   users.set(id, user);
@@ -94,9 +96,7 @@ export function startSession(ownerUserId: string): CodingSession {
     throw new Error("Owner not found.");
   }
 
-  if (!canStartAnotherSession(owner.planCode, owner.sessionsUsed)) {
-    throw new Error("Session limit reached for current plan.");
-  }
+  validateSessionStart(owner.planCode, owner, new Date());
 
   const limits = planCatalog[owner.planCode];
   const session: CodingSession = {
@@ -104,7 +104,8 @@ export function startSession(ownerUserId: string): CodingSession {
     ownerUserId,
     roomCode: randomUUID().slice(0, 8),
     participants: [ownerUserId],
-    startedAt: new Date().toISOString()
+    startedAt: new Date().toISOString(),
+    billableMinutes: limits.sessionDurationMinutes === "unlimited" ? 0 : limits.sessionDurationMinutes
   };
 
   if (limits.maxPeoplePerSession < 2) {
@@ -112,6 +113,10 @@ export function startSession(ownerUserId: string): CodingSession {
   }
 
   owner.sessionsUsed += 1;
+  owner.sessionsStartedHistory.push(session.startedAt);
+  if (limits.sessionDurationMinutes !== "unlimited") {
+    owner.minutesConsumed += limits.sessionDurationMinutes;
+  }
   users.set(owner.id, owner);
   sessions.set(session.id, session);
   return session;
@@ -148,6 +153,27 @@ export function endSession(sessionId: string): CodingSession {
   if (!session) {
     throw new Error("Session not found.");
   }
+  if (session.endedAt) {
+    return session;
+  }
+
+  const owner = users.get(session.ownerUserId);
+  const limits = owner ? planCatalog[owner.planCode] : null;
+
+  if (owner && limits && limits.sessionDurationMinutes !== "unlimited") {
+    const startedAtMs = new Date(session.startedAt).getTime();
+    const endedAtMs = Date.now();
+    const elapsedMinutes = Math.max(1, Math.ceil((endedAtMs - startedAtMs) / (60 * 1000)));
+    const planned = limits.sessionDurationMinutes;
+    const billed = Math.min(planned, elapsedMinutes);
+    const refund = Math.max(0, planned - billed);
+    if (refund > 0) {
+      owner.minutesConsumed = Math.max(0, owner.minutesConsumed - refund);
+      users.set(owner.id, owner);
+    }
+    session.billableMinutes = billed;
+  }
+
   session.endedAt = new Date().toISOString();
   sessions.set(session.id, session);
   return session;

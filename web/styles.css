@@ -296,6 +296,14 @@ button,
   color: var(--muted);
 }
 
+.feature-list {
+  margin: 8px 0 0;
+  padding-left: 18px;
+  color: var(--muted);
+  display: grid;
+  gap: 6px;
+}
+
 .cta-panel {
   padding: 16px 18px;
   display: flex;

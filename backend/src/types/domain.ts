@@ -11,6 +11,12 @@ export type InviteStatus = "pending" | "accepted" | "declined";
 export interface PlanLimits {
   maxPeoplePerSession: number;
   maxSessionsPerPeriod: number | "unlimited";
+  maxSessionsPerDay: number | "unlimited";
+  sessionDurationMinutes: number | "unlimited";
+  maxHoursTotal: number | "unlimited";
+  softLimitHoursBeforeDailyThrottle?: number;
+  dailyThrottleSessionsAfterSoftLimit?: number;
+  carryForwardUnusedMinutes?: boolean;
   period: "month" | "year" | "lifetime" | "trial";
   priceUsd: number;
 }
@@ -22,6 +28,8 @@ export interface User {
   trialEndsAt?: string;
   planCode: PlanCode;
   sessionsUsed: number;
+  sessionsStartedHistory: string[];
+  minutesConsumed: number;
 }
 
 export interface PairInvite {
@@ -41,4 +49,5 @@ export interface CodingSession {
   participants: string[];
   startedAt: string;
   endedAt?: string;
+  billableMinutes?: number;
 }

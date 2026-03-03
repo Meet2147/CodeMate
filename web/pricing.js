@@ -17,14 +17,25 @@ const catalog = {
       title: "Pro Monthly",
       price: "$29.99",
       inrPrice: "INR 2,799",
-      features: ["2 people at a time", "300 one-hour sessions", "Best for focused pair practice"]
+      features: [
+        "2 users per session",
+        "5 sessions per day",
+        "50 min per session",
+        "300 total hours (unused minutes carry forward)"
+      ]
     },
     yearly: {
       code: "pro_yearly",
       title: "Pro Yearly",
       price: "$99",
       inrPrice: "INR 9,000",
-      features: ["2 people at a time", "300 one-hour sessions", "Lowest annual cost for regular users"]
+      features: [
+        "2 users per session",
+        "Unlimited sessions/day",
+        "50 min per session",
+        "500 total hours",
+        "After 300 hours: restricted to 1 session/day"
+      ]
     }
   },
   premium: {
@@ -33,14 +44,24 @@ const catalog = {
       title: "Premium Monthly",
       price: "$199",
       inrPrice: "INR 18,999",
-      features: ["2 people at a time", "500 one-hour sessions", "Priority support and premium capacity"]
+      features: [
+        "10 users per session",
+        "15 sessions per day",
+        "50 min per session",
+        "750 total hours"
+      ]
     },
     yearly: {
       code: "premium_yearly",
       title: "Premium Yearly",
       price: "$349",
       inrPrice: "INR 30,000",
-      features: ["2 people at a time", "500 one-hour sessions", "Best value for long-term heavy use"]
+      features: [
+        "10 users per session",
+        "Unlimited sessions/day",
+        "50 min per session",
+        "1050 total hours"
+      ]
     }
   },
   lifetime: {
