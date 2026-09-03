@@ -52,8 +52,8 @@ struct PracticeHomeView: View {
                     .padding(.bottom, 24)
                 }
             }
-            .padding(20)
-            .frame(width: 420)
+            .padding(16)
+            .frame(width: 320)
             .background(CMTheme.base(scheme))
 
             Divider()

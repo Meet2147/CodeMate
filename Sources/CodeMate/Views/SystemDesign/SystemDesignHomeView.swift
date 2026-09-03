@@ -47,8 +47,8 @@ struct SystemDesignHomeView: View {
                     .padding(.bottom, 24)
                 }
             }
-            .padding(20)
-            .frame(width: 420)
+            .padding(16)
+            .frame(width: 320)
             .background(CMTheme.base(scheme))
 
             Divider()
@@ -82,6 +82,7 @@ private struct DesignQuestionRow: View {
     @Environment(\.colorScheme) private var scheme
     let question: SystemDesignQuestion
     let isSelected: Bool
+    @State private var isHovering = false
 
     var body: some View {
         HStack(spacing: 10) {
@@ -103,11 +104,20 @@ private struct DesignQuestionRow: View {
         .background(
             RoundedRectangle(cornerRadius: CMTheme.smallCornerRadius, style: .continuous)
                 .fill(CMTheme.base(scheme))
-                .shadow(color: CMTheme.shadowDark(scheme), radius: isSelected ? 3 : 6, x: isSelected ? 2 : 5, y: isSelected ? 2 : 5)
-                .shadow(color: CMTheme.shadowLight(scheme), radius: isSelected ? 3 : 6, x: isSelected ? -2 : -5, y: isSelected ? -2 : -5)
+                .shadow(color: CMTheme.shadowDark(scheme), radius: isSelected ? 2 : 4, x: isSelected ? 1.5 : 3, y: isSelected ? 1.5 : 3)
+                .shadow(color: CMTheme.shadowLight(scheme), radius: isSelected ? 2 : 4, x: isSelected ? -1.5 : -3, y: isSelected ? -1.5 : -3)
+                .overlay(
+                    RoundedRectangle(cornerRadius: CMTheme.smallCornerRadius, style: .continuous)
+                        .strokeBorder(CMTheme.hairline(scheme), lineWidth: 1)
+                )
         )
         .overlay(RoundedRectangle(cornerRadius: CMTheme.smallCornerRadius).stroke(isSelected ? CMTheme.accent : .clear, lineWidth: 2))
+        .brightness(isHovering && !isSelected ? 0.03 : 0)
+        .scaleEffect(isSelected ? 1.0 : (isHovering ? 1.008 : 1.0))
         .contentShape(Rectangle())
+        .onHover { isHovering = $0 }
+        .animation(.easeOut(duration: 0.12), value: isHovering)
+        .animation(.easeOut(duration: 0.15), value: isSelected)
     }
 }
 
@@ -161,13 +171,15 @@ private struct SystemDesignDetailView: View {
                 .padding(16)
             }
             .background(CMTheme.base(scheme))
-            .frame(minWidth: 400)
+            .frame(minWidth: 320)
 
             if showAssistant {
                 AssistantPanelView(context: AssistantContext(designQuestion: question))
-                    .frame(minWidth: 320, idealWidth: 380, maxWidth: 460)
+                    .frame(minWidth: 260, idealWidth: 300, maxWidth: 400)
+                    .transition(.move(edge: .trailing).combined(with: .opacity))
             }
         }
+        .animation(.easeInOut(duration: 0.2), value: showAssistant)
         .toolbar {
             ToolbarItem(placement: .automatic) {
                 Button {

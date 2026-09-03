@@ -16,10 +16,12 @@ struct CodeMateApp: App {
     var body: some Scene {
         WindowGroup {
             RootView()
-                .frame(minWidth: 1180, minHeight: 760)
+                .frame(minWidth: 1040, minHeight: 720)
         }
         .modelContainer(sharedModelContainer)
-        .windowResizability(.contentSize)
+        .windowResizability(.automatic)
+        .defaultSize(width: 1360, height: 840)
+        .defaultPosition(.center)
         .commands {
             CommandGroup(replacing: .newItem) { }
         }

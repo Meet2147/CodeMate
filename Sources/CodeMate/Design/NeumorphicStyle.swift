@@ -11,11 +11,17 @@ enum CMTheme {
     }
 
     static func shadowDark(_ scheme: ColorScheme) -> Color {
-        scheme == .dark ? Color.black.opacity(0.65) : Color(red: 0.71, green: 0.73, blue: 0.78).opacity(0.75)
+        scheme == .dark ? Color.black.opacity(0.45) : Color(red: 0.71, green: 0.73, blue: 0.78).opacity(0.6)
     }
 
     static func shadowLight(_ scheme: ColorScheme) -> Color {
-        scheme == .dark ? Color.white.opacity(0.035) : Color.white.opacity(0.9)
+        scheme == .dark ? Color.white.opacity(0.045) : Color.white.opacity(0.85)
+    }
+
+    /// Hairline border used on raised/inset surfaces to keep edges crisp at
+    /// small sizes, where soft shadows alone read as blurry rather than smooth.
+    static func hairline(_ scheme: ColorScheme) -> Color {
+        scheme == .dark ? Color.white.opacity(0.06) : Color.black.opacity(0.05)
     }
 
     static func textPrimary(_ scheme: ColorScheme) -> Color {
@@ -60,8 +66,12 @@ struct NeumorphicRaised: ViewModifier {
             .background(
                 RoundedRectangle(cornerRadius: radius, style: .continuous)
                     .fill(CMTheme.base(scheme))
-                    .shadow(color: CMTheme.shadowDark(scheme), radius: 10 * intensity, x: 7 * intensity, y: 7 * intensity)
-                    .shadow(color: CMTheme.shadowLight(scheme), radius: 10 * intensity, x: -7 * intensity, y: -7 * intensity)
+                    .shadow(color: CMTheme.shadowDark(scheme), radius: 7 * intensity, x: 5 * intensity, y: 5 * intensity)
+                    .shadow(color: CMTheme.shadowLight(scheme), radius: 7 * intensity, x: -5 * intensity, y: -5 * intensity)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: radius, style: .continuous)
+                            .strokeBorder(CMTheme.hairline(scheme), lineWidth: 1)
+                    )
             )
     }
 }
@@ -80,19 +90,23 @@ struct NeumorphicInset: ViewModifier {
                     .fill(CMTheme.base(scheme))
                     .overlay(
                         RoundedRectangle(cornerRadius: radius, style: .continuous)
-                            .stroke(CMTheme.shadowDark(scheme), lineWidth: 3)
-                            .blur(radius: 4)
-                            .offset(x: 2, y: 2)
+                            .stroke(CMTheme.shadowDark(scheme), lineWidth: 2.5)
+                            .blur(radius: 3)
+                            .offset(x: 1.5, y: 1.5)
                             .mask(RoundedRectangle(cornerRadius: radius, style: .continuous).fill(
                                 LinearGradient(colors: [.black, .clear], startPoint: .topLeading, endPoint: .bottomTrailing)))
                     )
                     .overlay(
                         RoundedRectangle(cornerRadius: radius, style: .continuous)
-                            .stroke(CMTheme.shadowLight(scheme), lineWidth: 3)
-                            .blur(radius: 4)
-                            .offset(x: -2, y: -2)
+                            .stroke(CMTheme.shadowLight(scheme), lineWidth: 2.5)
+                            .blur(radius: 3)
+                            .offset(x: -1.5, y: -1.5)
                             .mask(RoundedRectangle(cornerRadius: radius, style: .continuous).fill(
                                 LinearGradient(colors: [.clear, .black], startPoint: .topLeading, endPoint: .bottomTrailing)))
+                    )
+                    .overlay(
+                        RoundedRectangle(cornerRadius: radius, style: .continuous)
+                            .strokeBorder(CMTheme.hairline(scheme), lineWidth: 1)
                     )
             )
     }
@@ -112,10 +126,14 @@ struct NeumorphicButtonStyle: ButtonStyle {
             .background(
                 RoundedRectangle(cornerRadius: CMTheme.smallCornerRadius, style: .continuous)
                     .fill(prominent ? AnyShapeStyle(tint.gradient) : AnyShapeStyle(CMTheme.base(scheme)))
-                    .shadow(color: CMTheme.shadowDark(scheme), radius: configuration.isPressed ? 2 : 6,
-                            x: configuration.isPressed ? 1 : 4, y: configuration.isPressed ? 1 : 4)
-                    .shadow(color: CMTheme.shadowLight(scheme), radius: configuration.isPressed ? 2 : 6,
-                            x: configuration.isPressed ? -1 : -4, y: configuration.isPressed ? -1 : -4)
+                    .shadow(color: CMTheme.shadowDark(scheme), radius: configuration.isPressed ? 2 : 5,
+                            x: configuration.isPressed ? 1 : 3, y: configuration.isPressed ? 1 : 3)
+                    .shadow(color: CMTheme.shadowLight(scheme), radius: configuration.isPressed ? 2 : 5,
+                            x: configuration.isPressed ? -1 : -3, y: configuration.isPressed ? -1 : -3)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: CMTheme.smallCornerRadius, style: .continuous)
+                            .strokeBorder(prominent ? Color.white.opacity(0.15) : CMTheme.hairline(scheme), lineWidth: 1)
+                    )
             )
             .scaleEffect(configuration.isPressed ? 0.97 : 1.0)
             .animation(.spring(response: 0.25, dampingFraction: 0.7), value: configuration.isPressed)

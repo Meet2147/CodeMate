@@ -24,11 +24,15 @@ struct RootView: View {
         NavigationSplitView {
             List(AppSection.allCases, selection: $section) { item in
                 Label(item.rawValue, systemImage: item.symbol)
+                    .font(.system(size: 13, weight: .medium))
+                    .lineLimit(1)
+                    .fixedSize(horizontal: true, vertical: false)
                     .tag(item as AppSection?)
-                    .padding(.vertical, 4)
+                    .padding(.vertical, 5)
             }
             .navigationTitle("CodeMate")
             .listStyle(.sidebar)
+            .navigationSplitViewColumnWidth(min: 200, ideal: 210, max: 240)
             .safeAreaInset(edge: .bottom) {
                 Button {
                     showsSettings = true
@@ -48,7 +52,9 @@ struct RootView: View {
                 }
             }
             .background(CMTheme.base(scheme).ignoresSafeArea())
+            .animation(.easeInOut(duration: 0.18), value: section)
         }
+        .navigationSplitViewStyle(.balanced)
         .sheet(isPresented: $showsSettings) {
             SettingsView()
                 .frame(width: 480, height: 460)

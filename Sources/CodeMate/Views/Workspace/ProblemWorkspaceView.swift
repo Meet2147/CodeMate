@@ -26,19 +26,21 @@ struct ProblemWorkspaceView: View {
     var body: some View {
         HSplitView {
             statementColumn
-                .frame(minWidth: 320, idealWidth: 360, maxWidth: 440)
+                .frame(minWidth: 260, idealWidth: 300, maxWidth: 420)
 
             editorColumn
-                .frame(minWidth: 420)
+                .frame(minWidth: 320, idealWidth: 380)
 
             if showAssistant {
                 AssistantPanelView(
                     context: AssistantContext(problem: problem, language: language, currentCode: code,
                                                hintsRevealedSoFar: hintsRevealed, lastRunOutput: runResult?.output)
                 )
-                .frame(minWidth: 320, idealWidth: 360, maxWidth: 440)
+                .frame(minWidth: 260, idealWidth: 300, maxWidth: 400)
+                .transition(.move(edge: .trailing).combined(with: .opacity))
             }
         }
+        .animation(.easeInOut(duration: 0.2), value: showAssistant)
         .toolbar {
             ToolbarItem(placement: .automatic) {
                 Button {
