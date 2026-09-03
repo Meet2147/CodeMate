@@ -9,9 +9,24 @@ struct AssistantPanelView: View {
     @State private var isThinking = false
     @State private var errorText: String?
     @State private var hasAPIKey = KeychainService.loadAPIKey()?.isEmpty == false
+    @State private var onDeviceAvailability = OnDeviceAvailability.current
+
+    /// On-device is always preferred (free, private, no key needed). A
+    /// user-supplied cloud key is the fallback for Macs without Apple
+    /// Intelligence; the canned offline assistant is the last resort.
+    private var activeSource: AssistantSource {
+        if case .available = onDeviceAvailability { return .onDevice }
+        if hasAPIKey { return .cloud }
+        if case .unavailable(let reason) = onDeviceAvailability { return .offline(reason: reason) }
+        return .offline(reason: "Assistant unavailable.")
+    }
 
     private var service: AIAssistantServicing {
-        hasAPIKey ? AnthropicAssistantService() : OfflineAssistantService()
+        switch activeSource {
+        case .onDevice: return OnDeviceAssistantService()
+        case .cloud: return AnthropicAssistantService()
+        case .offline: return OfflineAssistantService()
+        }
     }
 
     var body: some View {
@@ -52,7 +67,10 @@ struct AssistantPanelView: View {
             inputBar
         }
         .background(CMTheme.base(scheme))
-        .onAppear { hasAPIKey = KeychainService.loadAPIKey()?.isEmpty == false }
+        .onAppear {
+            hasAPIKey = KeychainService.loadAPIKey()?.isEmpty == false
+            onDeviceAvailability = OnDeviceAvailability.current
+        }
     }
 
     private var header: some View {
@@ -60,12 +78,27 @@ struct AssistantPanelView: View {
             Image(systemName: "sparkles").foregroundStyle(CMTheme.accent)
             Text("Assistant").font(.system(size: 13, weight: .bold, design: .rounded)).foregroundStyle(CMTheme.textPrimary(scheme))
             Spacer()
-            Circle().fill(hasAPIKey ? CMTheme.success : CMTheme.textSecondary(scheme).opacity(0.5)).frame(width: 6, height: 6)
-            Text(hasAPIKey ? "Live" : "Offline")
+            Circle().fill(statusColor).frame(width: 6, height: 6)
+            Text(statusLabel)
                 .font(.system(size: 9, weight: .bold))
-                .foregroundStyle(hasAPIKey ? CMTheme.success : CMTheme.textSecondary(scheme))
+                .foregroundStyle(statusColor)
         }
         .padding(14)
+    }
+
+    private var statusLabel: String {
+        switch activeSource {
+        case .onDevice: return "On-device"
+        case .cloud: return "Cloud"
+        case .offline: return "Offline"
+        }
+    }
+
+    private var statusColor: Color {
+        switch activeSource {
+        case .onDevice, .cloud: return CMTheme.success
+        case .offline: return CMTheme.textSecondary(scheme).opacity(0.6)
+        }
     }
 
     private var welcomeCard: some View {
@@ -73,14 +106,23 @@ struct AssistantPanelView: View {
             Text("I'm here so you never get stuck.")
                 .font(.system(size: 12, weight: .semibold))
                 .foregroundStyle(CMTheme.textPrimary(scheme))
-            Text(hasAPIKey
-                 ? "Ask me to explain the problem, compare approaches, review your code, or explain it step by step."
-                 : "Add your Anthropic API key in Settings for full live help. For now I can still give hints, compare approaches, and share complexity from this problem's notes.")
+            Text(welcomeBody)
                 .font(.system(size: 11))
                 .foregroundStyle(CMTheme.textSecondary(scheme))
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .neumorphicRaised(padding: 12)
+    }
+
+    private var welcomeBody: String {
+        switch activeSource {
+        case .onDevice:
+            return "Running fully on-device with Apple Intelligence -- no API key, no per-message cost, nothing leaves your Mac. Ask me to explain the problem, compare approaches, review your code, or walk through it step by step."
+        case .cloud:
+            return "Running on your own Anthropic key (Settings → AI Assistant). Ask me to explain the problem, compare approaches, review your code, or walk through it step by step."
+        case .offline(let reason):
+            return "\(reason) I can still give hints, compare approaches, and share complexity from this problem's notes -- or add your own Anthropic key in Settings for full help."
+        }
     }
 
     private var quickActionChips: some View {

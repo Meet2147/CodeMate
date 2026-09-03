@@ -7,6 +7,21 @@ struct SettingsView: View {
     @State private var apiKey: String = KeychainService.loadAPIKey() ?? ""
     @State private var savedConfirmation = false
     @State private var showsCompanyPicker = false
+    @State private var onDeviceAvailability = OnDeviceAvailability.current
+
+    private var onDeviceStatusText: String {
+        switch onDeviceAvailability {
+        case .available: return "On-device model ready"
+        case .unavailable(let reason): return reason
+        }
+    }
+
+    private var onDeviceStatusColor: Color {
+        switch onDeviceAvailability {
+        case .available: return CMTheme.success
+        case .unavailable: return CMTheme.warning
+        }
+    }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 18) {
@@ -54,9 +69,22 @@ struct SettingsView: View {
                     Image(systemName: "sparkles").foregroundStyle(CMTheme.accent)
                     Text("AI Assistant").font(.system(size: 13, weight: .bold)).foregroundStyle(CMTheme.textPrimary(scheme))
                 }
-                Text("CodeMate's assistant runs on your own Anthropic API key -- it's stored securely in the macOS Keychain and only ever sent to api.anthropic.com. Without a key, the assistant still works offline using this problem's hints and approach notes.")
+
+                HStack(spacing: 6) {
+                    Circle().fill(onDeviceStatusColor).frame(width: 6, height: 6)
+                    Text(onDeviceStatusText)
+                        .font(.system(size: 11.5, weight: .medium))
+                        .foregroundStyle(CMTheme.textPrimary(scheme))
+                }
+
+                Text("CodeMate's assistant runs fully on-device using Apple Intelligence by default -- no API key, no per-message cost, nothing ever leaves your Mac. If this Mac doesn't support that, add your own Anthropic key below as a cloud fallback (stored in the macOS Keychain, only ever sent to api.anthropic.com). Without either, the assistant still works offline using each problem's hints and approach notes.")
                     .font(.system(size: 11.5))
                     .foregroundStyle(CMTheme.textSecondary(scheme))
+
+                Text("CLOUD FALLBACK KEY (OPTIONAL)")
+                    .font(.system(size: 9.5, weight: .bold))
+                    .foregroundStyle(CMTheme.textSecondary(scheme))
+                    .padding(.top, 4)
 
                 SecureField("sk-ant-...", text: $apiKey)
                     .textFieldStyle(.plain)
@@ -93,6 +121,7 @@ struct SettingsView: View {
         }
         .padding(20)
         .background(CMTheme.base(scheme))
+        .onAppear { onDeviceAvailability = OnDeviceAvailability.current }
         .sheet(isPresented: $showsCompanyPicker) {
             CompanyPickerSheet()
         }
