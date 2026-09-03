@@ -245,7 +245,7 @@ struct ProblemWorkspaceView: View {
 
             CodeEditorView(text: $code)
                 .background(RoundedRectangle(cornerRadius: IDETheme.cornerRadius).fill(IDETheme.inputBackground))
-                .overlay(RoundedRectangle(cornerRadius: IDETheme.cornerRadius).stroke(IDETheme.border, lineWidth: 1))
+                .overlay(RoundedRectangle(cornerRadius: IDETheme.cornerRadius).stroke(IDETheme.border, lineWidth: 1).allowsHitTesting(false))
                 .clipShape(RoundedRectangle(cornerRadius: IDETheme.cornerRadius))
                 .padding(.horizontal, 14)
 

@@ -60,7 +60,7 @@ struct SystemDesignHomeView: View {
                 }
                 .pickerStyle(.segmented)
 
-                CompanyFilterBar(selected: $selectedCompanies, lockedCompanies: lockedCompanies) { _ in
+                CompanyFilterMenu(selected: $selectedCompanies, lockedCompanies: lockedCompanies) { _ in
                     showsPaywall = true
                 }
 

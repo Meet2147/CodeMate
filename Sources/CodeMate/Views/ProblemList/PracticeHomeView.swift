@@ -60,7 +60,7 @@ struct PracticeHomeView: View {
             VStack(alignment: .leading, spacing: 14) {
                 header
                 searchField
-                CompanyFilterBar(selected: $selectedCompanies, lockedCompanies: lockedCompanies) { _ in
+                CompanyFilterMenu(selected: $selectedCompanies, lockedCompanies: lockedCompanies) { _ in
                     showsPaywall = true
                 }
                 TopicFilterMenu(selected: $selectedTopics)

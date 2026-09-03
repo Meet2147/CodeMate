@@ -8,7 +8,10 @@ struct CodeEditorView: NSViewRepresentable {
     @Binding var text: String
 
     func makeNSView(context: Context) -> NSScrollView {
-        let textView = NSTextView()
+        let scrollView = NSScrollView()
+        let contentSize = scrollView.contentSize
+
+        let textView = NSTextView(frame: NSRect(origin: .zero, size: contentSize))
         textView.isEditable = true
         textView.isSelectable = true
         textView.isRichText = false
@@ -17,11 +20,22 @@ struct CodeEditorView: NSViewRepresentable {
         textView.textContainerInset = NSSize(width: 10, height: 10)
         textView.delegate = context.coordinator
         textView.string = text
-        textView.autoresizingMask = [.width]
         textView.isAutomaticQuoteSubstitutionEnabled = false
         textView.isAutomaticDashSubstitutionEnabled = false
         textView.isAutomaticTextReplacementEnabled = false
         textView.isAutomaticSpellingCorrectionEnabled = false
+
+        // Standard boilerplate for a scrollable, growable NSTextView --
+        // without this the text view keeps its tiny default frame and
+        // never properly tracks the scroll view, which makes clicks land
+        // outside its real (degenerate) bounds and breaks typing entirely.
+        textView.minSize = NSSize(width: 0, height: contentSize.height)
+        textView.maxSize = NSSize(width: CGFloat.greatestFiniteMagnitude, height: CGFloat.greatestFiniteMagnitude)
+        textView.isVerticallyResizable = true
+        textView.isHorizontallyResizable = false
+        textView.autoresizingMask = [.width]
+        textView.textContainer?.widthTracksTextView = true
+        textView.textContainer?.containerSize = NSSize(width: contentSize.width, height: CGFloat.greatestFiniteMagnitude)
 
         // The editor is always-dark IDE chrome regardless of system
         // appearance, so force dark aqua + explicit fixed colors rather
@@ -34,10 +48,10 @@ struct CodeEditorView: NSViewRepresentable {
         textView.textColor = NSColor(IDETheme.textPrimary)
         textView.insertionPointColor = NSColor(IDETheme.accent)
 
-        let scrollView = NSScrollView()
         scrollView.documentView = textView
         scrollView.hasVerticalScroller = true
         scrollView.hasHorizontalScroller = false
+        scrollView.autohidesScrollers = true
         scrollView.appearance = NSAppearance(named: .darkAqua)
         scrollView.drawsBackground = true
         scrollView.backgroundColor = NSColor(IDETheme.inputBackground)
@@ -48,6 +62,12 @@ struct CodeEditorView: NSViewRepresentable {
         scrollView.rulersVisible = true
 
         context.coordinator.textView = textView
+
+        // Focus the editor as soon as it appears so typing works immediately.
+        DispatchQueue.main.async {
+            scrollView.window?.makeFirstResponder(textView)
+        }
+
         return scrollView
     }
 

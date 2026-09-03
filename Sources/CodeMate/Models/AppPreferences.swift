@@ -10,6 +10,8 @@ final class AppPreferences {
     private let defaults = UserDefaults.standard
     private let companiesKey = "cm.targetCompanies"
     private let onboardedKey = "cm.hasOnboarded"
+    private let callsUsedKey = "cm.practiceCallsUsedThisMonth"
+    private let callsMonthKey = "cm.practiceCallsMonthKey"
 
     var targetCompanies: Set<Company> {
         didSet { persistCompanies() }
@@ -19,6 +21,11 @@ final class AppPreferences {
         didSet { defaults.set(hasOnboarded, forKey: onboardedKey) }
     }
 
+    /// Practice-call usage resets automatically at the start of each
+    /// calendar month (client-side only -- fine for a soft usage nudge,
+    /// not meant as tamper-proof metering).
+    private(set) var practiceCallsUsedThisMonth: Int = 0
+
     init() {
         if let raw = defaults.string(forKey: companiesKey), !raw.isEmpty {
             targetCompanies = Set(raw.split(separator: ",").compactMap { Company(rawValue: String($0)) })
@@ -26,6 +33,14 @@ final class AppPreferences {
             targetCompanies = []
         }
         hasOnboarded = defaults.bool(forKey: onboardedKey)
+
+        let currentMonthKey = Self.monthKey(for: .now)
+        if defaults.string(forKey: callsMonthKey) == currentMonthKey {
+            practiceCallsUsedThisMonth = defaults.integer(forKey: callsUsedKey)
+        } else {
+            defaults.set(currentMonthKey, forKey: callsMonthKey)
+            defaults.set(0, forKey: callsUsedKey)
+        }
     }
 
     private func persistCompanies() {
@@ -35,5 +50,21 @@ final class AppPreferences {
     /// Resets onboarding so the picker shows again next launch (or immediately, if the caller re-renders RootView).
     func resetOnboarding() {
         hasOnboarded = false
+    }
+
+    func canStartPracticeCall(tier: SubscriptionTier) -> Bool {
+        guard let limit = tier.practiceCallsPerMonth else { return true }
+        return practiceCallsUsedThisMonth < limit
+    }
+
+    func recordPracticeCallStarted() {
+        practiceCallsUsedThisMonth += 1
+        defaults.set(practiceCallsUsedThisMonth, forKey: callsUsedKey)
+    }
+
+    private static func monthKey(for date: Date) -> String {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy-MM"
+        return formatter.string(from: date)
     }
 }
