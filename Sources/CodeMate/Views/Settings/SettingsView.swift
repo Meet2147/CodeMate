@@ -4,9 +4,11 @@ struct SettingsView: View {
     @Environment(\.colorScheme) private var scheme
     @Environment(\.dismiss) private var dismiss
     @Environment(AppPreferences.self) private var prefs
+    @Environment(StoreManager.self) private var store
     @State private var apiKey: String = KeychainService.loadAPIKey() ?? ""
     @State private var savedConfirmation = false
     @State private var showsCompanyPicker = false
+    @State private var showsPaywall = false
     @State private var onDeviceAvailability = OnDeviceAvailability.current
 
     private var onDeviceStatusText: String {
@@ -33,6 +35,24 @@ struct SettingsView: View {
                 Button("Done") { dismiss() }
                     .buttonStyle(NeumorphicButtonStyle(prominent: true))
             }
+
+            HStack(spacing: 12) {
+                VStack(alignment: .leading, spacing: 2) {
+                    HStack(spacing: 6) {
+                        Image(systemName: "star.fill").foregroundStyle(CMTheme.accent)
+                        Text("CodeMate \(store.currentTier.displayName)")
+                            .font(.system(size: 13, weight: .bold))
+                            .foregroundStyle(CMTheme.textPrimary(scheme))
+                    }
+                    Text(store.currentTier == .max ? "You have everything, unlimited." : store.currentTier.tagline)
+                        .font(.system(size: 11))
+                        .foregroundStyle(CMTheme.textSecondary(scheme))
+                }
+                Spacer()
+                Button(store.currentTier == .free ? "Upgrade" : "Manage Plan") { showsPaywall = true }
+                    .buttonStyle(NeumorphicButtonStyle(tint: CMTheme.accent, prominent: store.currentTier == .free))
+            }
+            .neumorphicRaised(padding: 16)
 
             VStack(alignment: .leading, spacing: 10) {
                 HStack(spacing: 6) {
@@ -124,6 +144,9 @@ struct SettingsView: View {
         .onAppear { onDeviceAvailability = OnDeviceAvailability.current }
         .sheet(isPresented: $showsCompanyPicker) {
             CompanyPickerSheet()
+        }
+        .sheet(isPresented: $showsPaywall) {
+            PaywallView()
         }
     }
 }

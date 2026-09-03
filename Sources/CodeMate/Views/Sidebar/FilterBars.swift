@@ -3,6 +3,11 @@ import SwiftUI
 struct CompanyFilterBar: View {
     @Environment(\.colorScheme) private var scheme
     @Binding var selected: Set<Company>
+    /// Companies the current plan doesn't include. Locked chips show a lock
+    /// glyph and trigger `onLockedTap` instead of toggling. Empty by default
+    /// (used as-is by onboarding/Settings, where every company is browsable).
+    var lockedCompanies: Set<Company> = []
+    var onLockedTap: (Company) -> Void = { _ in }
 
     private let columns = [GridItem(.adaptive(minimum: 64, maximum: 90), spacing: 8)]
 
@@ -24,21 +29,34 @@ struct CompanyFilterBar: View {
             LazyVGrid(columns: columns, alignment: .leading, spacing: 8) {
                 ForEach(Company.allCases) { company in
                     let isOn = selected.contains(company)
-                    Text(company.initials)
+                    let isLocked = lockedCompanies.contains(company)
+                    HStack(spacing: 3) {
+                        if isLocked {
+                            Image(systemName: "lock.fill").font(.system(size: 8))
+                        }
+                        Text(company.initials)
+                    }
                         .font(.system(size: 10.5, weight: .bold, design: .rounded))
                         .lineLimit(1)
                         .minimumScaleFactor(0.85)
                         .padding(.horizontal, 8)
                         .padding(.vertical, 6)
                         .frame(maxWidth: .infinity)
-                        .foregroundStyle(isOn ? .white : CMTheme.textPrimary(scheme))
+                        .foregroundStyle(isLocked ? CMTheme.textSecondary(scheme) : (isOn ? .white : CMTheme.textPrimary(scheme)))
                         .background(
-                            Capsule().fill(isOn ? AnyShapeStyle(CMTheme.companyColor(company).gradient) : AnyShapeStyle(CMTheme.base(scheme)))
+                            Capsule().fill(isOn && !isLocked ? AnyShapeStyle(CMTheme.companyColor(company).gradient) : AnyShapeStyle(CMTheme.base(scheme)))
                                 .shadow(color: CMTheme.shadowDark(scheme), radius: 3, x: 2, y: 2)
                                 .shadow(color: CMTheme.shadowLight(scheme), radius: 3, x: -2, y: -2)
                         )
+                        .opacity(isLocked ? 0.6 : 1.0)
                         .contentShape(Capsule())
-                        .onTapGesture { withAnimation(.easeOut(duration: 0.12)) { toggle(company) } }
+                        .onTapGesture {
+                            if isLocked {
+                                onLockedTap(company)
+                            } else {
+                                withAnimation(.easeOut(duration: 0.12)) { toggle(company) }
+                            }
+                        }
                 }
             }
         }

@@ -4,6 +4,7 @@ import SwiftData
 struct PracticeHomeView: View {
     @Environment(\.colorScheme) private var scheme
     @Environment(AppPreferences.self) private var prefs
+    @Environment(StoreManager.self) private var store
     @Query private var progressRecords: [ProblemProgress]
 
     @State private var searchText = ""
@@ -12,24 +13,44 @@ struct PracticeHomeView: View {
     @State private var selectedDifficulties: Set<Difficulty> = []
     @State private var selectedProblemId: String?
     @State private var hasSeededFromPreferences = false
+    @State private var showsPaywall = false
 
     private var progressByProblem: [String: ProblemProgress] {
         Dictionary(uniqueKeysWithValues: progressRecords.map { ($0.problemId, $0) })
     }
 
+    /// Companies this plan doesn't include. nil maxTargetCompanies means unlimited.
+    private var lockedCompanies: Set<Company> {
+        guard let maxCount = store.currentTier.maxTargetCompanies else { return [] }
+        let allowed = allowedCompanies(maxCount: maxCount)
+        return Set(Company.allCases).subtracting(allowed)
+    }
+
+    private func allowedCompanies(maxCount: Int) -> Set<Company> {
+        let ordered = Company.allCases.filter { prefs.targetCompanies.contains($0) }
+        let base = ordered.isEmpty ? Array(Company.allCases.prefix(maxCount)) : ordered
+        return Set(base.prefix(maxCount))
+    }
+
+    /// What actually gets filtered against -- locked-out companies never
+    /// restrict results even if they're still "selected" from onboarding.
+    private var effectiveSelectedCompanies: Set<Company> {
+        selectedCompanies.subtracting(lockedCompanies)
+    }
+
     private var filtered: [Problem] {
         let base = ProblemBank.all.filter { problem in
-            (selectedCompanies.isEmpty || !selectedCompanies.isDisjoint(with: problem.companies)) &&
+            (effectiveSelectedCompanies.isEmpty || !effectiveSelectedCompanies.isDisjoint(with: problem.companies)) &&
             (selectedTopics.isEmpty || !selectedTopics.isDisjoint(with: problem.topics)) &&
             (selectedDifficulties.isEmpty || selectedDifficulties.contains(problem.difficulty)) &&
             (searchText.isEmpty || problem.title.localizedCaseInsensitiveContains(searchText))
         }
-        guard !selectedCompanies.isEmpty else { return base }
+        guard !effectiveSelectedCompanies.isEmpty else { return base }
         // Questions overlapping more of the targeted companies are the most
         // "frequently asked" for this student's target set -- surface those first.
         return base.sorted { a, b in
-            let aMatches = selectedCompanies.intersection(a.companies).count
-            let bMatches = selectedCompanies.intersection(b.companies).count
+            let aMatches = effectiveSelectedCompanies.intersection(a.companies).count
+            let bMatches = effectiveSelectedCompanies.intersection(b.companies).count
             if aMatches != bMatches { return aMatches > bMatches }
             return a.difficulty < b.difficulty
         }
@@ -40,7 +61,9 @@ struct PracticeHomeView: View {
             VStack(alignment: .leading, spacing: 16) {
                 header
                 searchField
-                CompanyFilterBar(selected: $selectedCompanies)
+                CompanyFilterBar(selected: $selectedCompanies, lockedCompanies: lockedCompanies) { _ in
+                    showsPaywall = true
+                }
                 TopicFilterMenu(selected: $selectedTopics)
                 DifficultyFilterBar(selected: $selectedDifficulties)
                 Divider().padding(.vertical, 4)
@@ -84,6 +107,9 @@ struct PracticeHomeView: View {
             hasSeededFromPreferences = true
             selectedCompanies = prefs.targetCompanies
         }
+        .sheet(isPresented: $showsPaywall) {
+            PaywallView()
+        }
     }
 
     private var header: some View {
@@ -91,7 +117,7 @@ struct PracticeHomeView: View {
             Text("DSA Practice")
                 .font(.system(size: 24, weight: .bold, design: .rounded))
                 .foregroundStyle(CMTheme.textPrimary(scheme))
-            if selectedCompanies.count == 1, let company = selectedCompanies.first {
+            if effectiveSelectedCompanies.count == 1, let company = effectiveSelectedCompanies.first {
                 Text("Frequently asked at \(company.rawValue) -- \(filtered.count) problems")
                     .font(.system(size: 11.5, weight: .semibold))
                     .foregroundStyle(CMTheme.companyColor(company))

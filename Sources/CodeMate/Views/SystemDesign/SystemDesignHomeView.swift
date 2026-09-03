@@ -3,20 +3,33 @@ import SwiftUI
 struct SystemDesignHomeView: View {
     @Environment(\.colorScheme) private var scheme
     @Environment(AppPreferences.self) private var prefs
+    @Environment(StoreManager.self) private var store
     @State private var selectedScope: DesignScope?
     @State private var selectedCompanies: Set<Company> = []
     @State private var selectedId: String?
     @State private var hasSeededFromPreferences = false
+    @State private var showsPaywall = false
+
+    private var lockedCompanies: Set<Company> {
+        guard let maxCount = store.currentTier.maxTargetCompanies else { return [] }
+        let ordered = Company.allCases.filter { prefs.targetCompanies.contains($0) }
+        let base = ordered.isEmpty ? Array(Company.allCases.prefix(maxCount)) : ordered
+        return Set(Company.allCases).subtracting(Set(base.prefix(maxCount)))
+    }
+
+    private var effectiveSelectedCompanies: Set<Company> {
+        selectedCompanies.subtracting(lockedCompanies)
+    }
 
     private var filtered: [SystemDesignQuestion] {
         let base = SystemDesignBank.all.filter { q in
             (selectedScope == nil || q.scope == selectedScope) &&
-            (selectedCompanies.isEmpty || !selectedCompanies.isDisjoint(with: q.companies))
+            (effectiveSelectedCompanies.isEmpty || !effectiveSelectedCompanies.isDisjoint(with: q.companies))
         }
-        guard !selectedCompanies.isEmpty else { return base }
+        guard !effectiveSelectedCompanies.isEmpty else { return base }
         return base.sorted { a, b in
-            let aMatches = selectedCompanies.intersection(a.companies).count
-            let bMatches = selectedCompanies.intersection(b.companies).count
+            let aMatches = effectiveSelectedCompanies.intersection(a.companies).count
+            let bMatches = effectiveSelectedCompanies.intersection(b.companies).count
             if aMatches != bMatches { return aMatches > bMatches }
             return a.difficulty < b.difficulty
         }
@@ -29,7 +42,7 @@ struct SystemDesignHomeView: View {
                     Text("LLD / HLD")
                         .font(.system(size: 24, weight: .bold, design: .rounded))
                         .foregroundStyle(CMTheme.textPrimary(scheme))
-                    if selectedCompanies.count == 1, let company = selectedCompanies.first {
+                    if effectiveSelectedCompanies.count == 1, let company = effectiveSelectedCompanies.first {
                         Text("Frequently asked at \(company.rawValue) -- \(filtered.count) questions")
                             .font(.system(size: 11.5, weight: .semibold))
                             .foregroundStyle(CMTheme.companyColor(company))
@@ -48,7 +61,9 @@ struct SystemDesignHomeView: View {
                 }
                 .pickerStyle(.segmented)
 
-                CompanyFilterBar(selected: $selectedCompanies)
+                CompanyFilterBar(selected: $selectedCompanies, lockedCompanies: lockedCompanies) { _ in
+                    showsPaywall = true
+                }
 
                 Divider().padding(.vertical, 4)
 
@@ -94,6 +109,9 @@ struct SystemDesignHomeView: View {
             guard !hasSeededFromPreferences else { return }
             hasSeededFromPreferences = true
             selectedCompanies = prefs.targetCompanies
+        }
+        .sheet(isPresented: $showsPaywall) {
+            PaywallView()
         }
     }
 }

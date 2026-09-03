@@ -66,7 +66,7 @@ struct RootView: View {
         .navigationSplitViewStyle(.balanced)
         .sheet(isPresented: $showsSettings) {
             SettingsView()
-                .frame(width: 520, height: 600)
+                .frame(width: 520, height: 660)
         }
     }
 }
