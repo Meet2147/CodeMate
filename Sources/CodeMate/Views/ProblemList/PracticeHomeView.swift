@@ -3,6 +3,7 @@ import SwiftData
 
 struct PracticeHomeView: View {
     @Environment(\.colorScheme) private var scheme
+    @Environment(AppPreferences.self) private var prefs
     @Query private var progressRecords: [ProblemProgress]
 
     @State private var searchText = ""
@@ -10,17 +11,27 @@ struct PracticeHomeView: View {
     @State private var selectedTopics: Set<Topic> = []
     @State private var selectedDifficulties: Set<Difficulty> = []
     @State private var selectedProblemId: String?
+    @State private var hasSeededFromPreferences = false
 
     private var progressByProblem: [String: ProblemProgress] {
         Dictionary(uniqueKeysWithValues: progressRecords.map { ($0.problemId, $0) })
     }
 
     private var filtered: [Problem] {
-        ProblemBank.all.filter { problem in
+        let base = ProblemBank.all.filter { problem in
             (selectedCompanies.isEmpty || !selectedCompanies.isDisjoint(with: problem.companies)) &&
             (selectedTopics.isEmpty || !selectedTopics.isDisjoint(with: problem.topics)) &&
             (selectedDifficulties.isEmpty || selectedDifficulties.contains(problem.difficulty)) &&
             (searchText.isEmpty || problem.title.localizedCaseInsensitiveContains(searchText))
+        }
+        guard !selectedCompanies.isEmpty else { return base }
+        // Questions overlapping more of the targeted companies are the most
+        // "frequently asked" for this student's target set -- surface those first.
+        return base.sorted { a, b in
+            let aMatches = selectedCompanies.intersection(a.companies).count
+            let bMatches = selectedCompanies.intersection(b.companies).count
+            if aMatches != bMatches { return aMatches > bMatches }
+            return a.difficulty < b.difficulty
         }
     }
 
@@ -68,6 +79,11 @@ struct PracticeHomeView: View {
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
+        .onAppear {
+            guard !hasSeededFromPreferences else { return }
+            hasSeededFromPreferences = true
+            selectedCompanies = prefs.targetCompanies
+        }
     }
 
     private var header: some View {
@@ -75,9 +91,15 @@ struct PracticeHomeView: View {
             Text("DSA Practice")
                 .font(.system(size: 24, weight: .bold, design: .rounded))
                 .foregroundStyle(CMTheme.textPrimary(scheme))
-            Text("\(filtered.count) of \(ProblemBank.all.count) problems")
-                .font(.system(size: 12, weight: .medium))
-                .foregroundStyle(CMTheme.textSecondary(scheme))
+            if selectedCompanies.count == 1, let company = selectedCompanies.first {
+                Text("Frequently asked at \(company.rawValue) -- \(filtered.count) problems")
+                    .font(.system(size: 11.5, weight: .semibold))
+                    .foregroundStyle(CMTheme.companyColor(company))
+            } else {
+                Text("\(filtered.count) of \(ProblemBank.all.count) problems")
+                    .font(.system(size: 12, weight: .medium))
+                    .foregroundStyle(CMTheme.textSecondary(scheme))
+            }
         }
     }
 

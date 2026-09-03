@@ -3,6 +3,8 @@ import SwiftData
 
 @main
 struct CodeMateApp: App {
+    @State private var preferences = AppPreferences()
+
     var sharedModelContainer: ModelContainer = {
         let schema = Schema([ProblemProgress.self])
         let config = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
@@ -17,6 +19,7 @@ struct CodeMateApp: App {
         WindowGroup {
             RootView()
                 .frame(minWidth: 1040, minHeight: 720)
+                .environment(preferences)
         }
         .modelContainer(sharedModelContainer)
         .windowResizability(.automatic)
@@ -28,7 +31,8 @@ struct CodeMateApp: App {
 
         Settings {
             SettingsView()
-                .frame(width: 480, height: 420)
+                .frame(width: 520, height: 600)
+                .environment(preferences)
         }
     }
 }

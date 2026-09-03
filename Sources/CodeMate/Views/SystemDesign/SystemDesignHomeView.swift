@@ -2,14 +2,23 @@ import SwiftUI
 
 struct SystemDesignHomeView: View {
     @Environment(\.colorScheme) private var scheme
+    @Environment(AppPreferences.self) private var prefs
     @State private var selectedScope: DesignScope?
     @State private var selectedCompanies: Set<Company> = []
     @State private var selectedId: String?
+    @State private var hasSeededFromPreferences = false
 
     private var filtered: [SystemDesignQuestion] {
-        SystemDesignBank.all.filter { q in
+        let base = SystemDesignBank.all.filter { q in
             (selectedScope == nil || q.scope == selectedScope) &&
             (selectedCompanies.isEmpty || !selectedCompanies.isDisjoint(with: q.companies))
+        }
+        guard !selectedCompanies.isEmpty else { return base }
+        return base.sorted { a, b in
+            let aMatches = selectedCompanies.intersection(a.companies).count
+            let bMatches = selectedCompanies.intersection(b.companies).count
+            if aMatches != bMatches { return aMatches > bMatches }
+            return a.difficulty < b.difficulty
         }
     }
 
@@ -20,9 +29,15 @@ struct SystemDesignHomeView: View {
                     Text("LLD / HLD")
                         .font(.system(size: 24, weight: .bold, design: .rounded))
                         .foregroundStyle(CMTheme.textPrimary(scheme))
-                    Text("\(filtered.count) system design questions")
-                        .font(.system(size: 12, weight: .medium))
-                        .foregroundStyle(CMTheme.textSecondary(scheme))
+                    if selectedCompanies.count == 1, let company = selectedCompanies.first {
+                        Text("Frequently asked at \(company.rawValue) -- \(filtered.count) questions")
+                            .font(.system(size: 11.5, weight: .semibold))
+                            .foregroundStyle(CMTheme.companyColor(company))
+                    } else {
+                        Text("\(filtered.count) system design questions")
+                            .font(.system(size: 12, weight: .medium))
+                            .foregroundStyle(CMTheme.textSecondary(scheme))
+                    }
                 }
 
                 Picker("Scope", selection: $selectedScope) {
@@ -74,6 +89,11 @@ struct SystemDesignHomeView: View {
                 }
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
+        }
+        .onAppear {
+            guard !hasSeededFromPreferences else { return }
+            hasSeededFromPreferences = true
+            selectedCompanies = prefs.targetCompanies
         }
     }
 }

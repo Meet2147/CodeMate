@@ -1,15 +1,22 @@
 # CodeMate for macOS
 
 A native SwiftUI macOS app that helps students prepare for DSA and system-design
-interviews at Amazon, Google, Apple, and Microsoft, with an in-app AI assistant,
+interviews at Amazon, Google, Apple, Microsoft, Meta, Netflix, OpenAI, Twitter/X,
+Uber, and LinkedIn, with an in-app AI assistant, company-targeted onboarding,
 neumorphic ("soft UI") design, and local progress tracking.
 
 ## What's in this MVP
 
-- **DSA Practice** — 24 curated problems (original phrasing), filterable by
-  company, topic, and difficulty. Each has a problem statement, examples,
-  constraints, a progressive hint ladder, and a "choose an approach" panel
-  comparing brute-force → optimal solutions with time/space complexity.
+- **Onboarding** — on first launch, pick which companies you're interviewing
+  with (multi-select, skippable). The Practice and LLD/HLD tabs open
+  pre-filtered to those companies, with questions that overlap more of your
+  targets surfaced first under a "Frequently asked at {Company}" header.
+  Changeable anytime from Settings → Target Companies.
+- **DSA Practice** — 74 curated problems (original phrasing) across all three
+  difficulty tiers, filterable by company, topic, and difficulty. Each has a
+  problem statement, examples, constraints, a progressive hint ladder, and a
+  "choose an approach" panel comparing brute-force → optimal solutions with
+  time/space complexity.
 - **Code editor** — line-numbered, monospaced, per-language starter code
   (Swift/Python/JS/Java/C++). Swift, Python, and JavaScript run locally via
   the system toolchain for quick sanity checks.
@@ -19,10 +26,12 @@ neumorphic ("soft UI") design, and local progress tracking.
   shipped app). Falls back to a deterministic offline assistant (hints,
   approach comparison, complexity) when no key is set, so it's never a dead
   end.
-- **LLD / HLD** — 8 system-design questions (parking lot, elevator, rate
+- **LLD / HLD** — 12 system-design questions (parking lot, elevator, rate
   limiter, URL shortener, news feed, chat system, web crawler, tic-tac-toe
-  engine) with clarifying questions and a requirements → entities → data
-  model → scaling scaffold, coached by the same assistant.
+  engine, an LLM inference serving queue, a trending-topics system, a video
+  streaming/recommendation service, and a ride-hailing dispatch system) with
+  clarifying questions and a requirements → entities → data model → scaling
+  scaffold, coached by the same assistant.
 - **Progress tracking** — local SwiftData store: per-problem solve status,
   saved code/notes, hints used; a Progress tab breaks it down by company and
   topic.
@@ -51,7 +60,7 @@ This is a working MVP, not a store-ready product yet:
 2. **Monetization** — no paywall/StoreKit wired up yet. Decide: one-time
    purchase, subscription (StoreKit 2), or the BYO-API-key model stays free
    and you charge for the app itself.
-3. **Content scale** — 24 problems / 8 design questions is a strong seed set;
+3. **Content scale** — 74 problems / 12 design questions is a strong seed set;
    a sellable "prep" product typically wants 150–300+ problems. The data
    model (`Data/ProblemBank.swift`, `Data/SystemDesignBank.swift`) is a plain
    Swift array, so this scales by adding entries, or by moving to a bundled
@@ -68,12 +77,13 @@ This is a working MVP, not a store-ready product yet:
 
 ```
 Sources/CodeMate/
-  CodeMateApp.swift          App entry point, SwiftData container
+  CodeMateApp.swift          App entry point, SwiftData container, AppPreferences injection
   Design/                    Neumorphic style system
-  Models/                    Problem, Company, Topic, SystemDesign, progress, assistant message
+  Models/                    Problem, Company, Topic, SystemDesign, progress, assistant message, AppPreferences
   Data/                      Curated problem bank + system-design bank
   Services/                  Anthropic/offline assistant, Keychain, local code runner
   Views/
+    Onboarding/               First-launch company picker + reusable CompanyPickerGrid
     Root/                    Navigation shell, Progress tab
     ProblemList/              Practice tab: filters + problem list
     Sidebar/                  Filter chip components
@@ -81,5 +91,5 @@ Sources/CodeMate/
     Editor/                   Code editor (NSViewRepresentable)
     Assistant/                AI chat panel
     SystemDesign/              LLD/HLD tab
-    Settings/                  API key entry
+    Settings/                  API key entry, target-company picker
 ```

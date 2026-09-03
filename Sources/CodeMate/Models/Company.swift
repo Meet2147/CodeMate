@@ -5,6 +5,12 @@ enum Company: String, CaseIterable, Identifiable, Codable {
     case google = "Google"
     case apple = "Apple"
     case microsoft = "Microsoft"
+    case meta = "Meta"
+    case netflix = "Netflix"
+    case openai = "OpenAI"
+    case twitter = "Twitter / X"
+    case uber = "Uber"
+    case linkedin = "LinkedIn"
 
     var id: String { rawValue }
 
@@ -14,6 +20,28 @@ enum Company: String, CaseIterable, Identifiable, Codable {
         case .google: return "GOOG"
         case .apple: return "AAPL"
         case .microsoft: return "MSFT"
+        case .meta: return "META"
+        case .netflix: return "NFLX"
+        case .openai: return "OAI"
+        case .twitter: return "X"
+        case .uber: return "UBER"
+        case .linkedin: return "LI"
+        }
+    }
+
+    /// Short one-line pitch shown on the onboarding company picker.
+    var blurb: String {
+        switch self {
+        case .amazon: return "Bar-raiser rounds, heavy on data structures + leadership principles"
+        case .google: return "Deep algorithmic rigor, clean code, and complexity trade-offs"
+        case .apple: return "Practical problem-solving with a strong systems/design bent"
+        case .microsoft: return "Balanced DSA + design, collaborative problem-solving style"
+        case .meta: return "Fast-paced coding rounds, product-sense system design"
+        case .netflix: return "Senior-leaning bar, scale and reliability-focused design"
+        case .openai: return "Strong CS fundamentals, ML-infra-flavored system design"
+        case .twitter: return "Real-time systems, graph-heavy social features"
+        case .uber: return "Geo/graph problems, marketplace and dispatch system design"
+        case .linkedin: return "Graph algorithms, professional-network-scale system design"
         }
     }
 }

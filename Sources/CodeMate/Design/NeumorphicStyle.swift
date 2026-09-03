@@ -46,6 +46,12 @@ enum CMTheme {
         case .google:    return Color(red: 0.26, green: 0.52, blue: 0.96)
         case .apple:     return Color(red: 0.55, green: 0.55, blue: 0.58)
         case .microsoft: return Color(red: 0.00, green: 0.60, blue: 0.86)
+        case .meta:      return Color(red: 0.02, green: 0.42, blue: 0.98)
+        case .netflix:   return Color(red: 0.90, green: 0.07, blue: 0.10)
+        case .openai:    return Color(red: 0.06, green: 0.64, blue: 0.53)
+        case .twitter:   return Color(red: 0.30, green: 0.32, blue: 0.38)
+        case .uber:      return Color(red: 0.20, green: 0.27, blue: 0.27)
+        case .linkedin:  return Color(red: 0.03, green: 0.40, blue: 0.76)
         }
     }
 

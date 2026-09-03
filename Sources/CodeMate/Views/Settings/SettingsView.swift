@@ -3,8 +3,10 @@ import SwiftUI
 struct SettingsView: View {
     @Environment(\.colorScheme) private var scheme
     @Environment(\.dismiss) private var dismiss
+    @Environment(AppPreferences.self) private var prefs
     @State private var apiKey: String = KeychainService.loadAPIKey() ?? ""
     @State private var savedConfirmation = false
+    @State private var showsCompanyPicker = false
 
     var body: some View {
         VStack(alignment: .leading, spacing: 18) {
@@ -16,6 +18,36 @@ struct SettingsView: View {
                 Button("Done") { dismiss() }
                     .buttonStyle(NeumorphicButtonStyle(prominent: true))
             }
+
+            VStack(alignment: .leading, spacing: 10) {
+                HStack(spacing: 6) {
+                    Image(systemName: "building.2").foregroundStyle(CMTheme.accent)
+                    Text("Target Companies").font(.system(size: 13, weight: .bold)).foregroundStyle(CMTheme.textPrimary(scheme))
+                }
+                Text("Practice and LLD/HLD open pre-filtered to these companies.")
+                    .font(.system(size: 11.5))
+                    .foregroundStyle(CMTheme.textSecondary(scheme))
+
+                if prefs.targetCompanies.isEmpty {
+                    Text("No companies selected yet -- every question shows by default.")
+                        .font(.system(size: 11.5))
+                        .foregroundStyle(CMTheme.textSecondary(scheme))
+                } else {
+                    HStack(spacing: 6) {
+                        ForEach(Array(prefs.targetCompanies).sorted(by: { $0.rawValue < $1.rawValue })) { company in
+                            Text(company.initials)
+                                .font(.system(size: 9, weight: .bold))
+                                .padding(.horizontal, 7).padding(.vertical, 3)
+                                .background(Capsule().fill(CMTheme.companyColor(company).opacity(0.18)))
+                                .foregroundStyle(CMTheme.companyColor(company))
+                        }
+                    }
+                }
+
+                Button("Change Target Companies") { showsCompanyPicker = true }
+                    .buttonStyle(NeumorphicButtonStyle())
+            }
+            .neumorphicRaised(padding: 16)
 
             VStack(alignment: .leading, spacing: 10) {
                 HStack(spacing: 6) {
@@ -61,5 +93,42 @@ struct SettingsView: View {
         }
         .padding(20)
         .background(CMTheme.base(scheme))
+        .sheet(isPresented: $showsCompanyPicker) {
+            CompanyPickerSheet()
+        }
+    }
+}
+
+/// Sheet used from Settings to change target companies after onboarding.
+/// Edits a local draft so "Cancel" discards changes cleanly.
+private struct CompanyPickerSheet: View {
+    @Environment(\.colorScheme) private var scheme
+    @Environment(\.dismiss) private var dismiss
+    @Environment(AppPreferences.self) private var prefs
+    @State private var draft: Set<Company> = []
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            HStack {
+                Text("Target Companies")
+                    .font(.system(size: 16, weight: .bold, design: .rounded))
+                    .foregroundStyle(CMTheme.textPrimary(scheme))
+                Spacer()
+                Button("Cancel") { dismiss() }
+                    .buttonStyle(NeumorphicButtonStyle())
+                Button("Save") {
+                    prefs.targetCompanies = draft
+                    dismiss()
+                }
+                .buttonStyle(NeumorphicButtonStyle(prominent: true))
+            }
+            ScrollView {
+                CompanyPickerGrid(selected: $draft)
+            }
+        }
+        .padding(20)
+        .frame(width: 560, height: 480)
+        .background(CMTheme.base(scheme))
+        .onAppear { draft = prefs.targetCompanies }
     }
 }

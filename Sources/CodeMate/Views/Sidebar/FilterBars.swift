@@ -4,26 +4,41 @@ struct CompanyFilterBar: View {
     @Environment(\.colorScheme) private var scheme
     @Binding var selected: Set<Company>
 
+    private let columns = [GridItem(.adaptive(minimum: 64, maximum: 90), spacing: 8)]
+
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {
-            Text("TARGET COMPANY")
-                .font(.system(size: 10, weight: .bold))
-                .foregroundStyle(CMTheme.textSecondary(scheme))
-                .kerning(0.5)
-            HStack(spacing: 8) {
+            HStack {
+                Text("TARGET COMPANY")
+                    .font(.system(size: 10, weight: .bold))
+                    .foregroundStyle(CMTheme.textSecondary(scheme))
+                    .kerning(0.5)
+                Spacer()
+                if !selected.isEmpty {
+                    Button("Clear") { withAnimation(.easeOut(duration: 0.12)) { selected.removeAll() } }
+                        .buttonStyle(.plain)
+                        .font(.system(size: 10, weight: .semibold))
+                        .foregroundStyle(CMTheme.accent)
+                }
+            }
+            LazyVGrid(columns: columns, alignment: .leading, spacing: 8) {
                 ForEach(Company.allCases) { company in
                     let isOn = selected.contains(company)
                     Text(company.initials)
-                        .font(.system(size: 11, weight: .bold, design: .rounded))
-                        .padding(.horizontal, 10)
+                        .font(.system(size: 10.5, weight: .bold, design: .rounded))
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.85)
+                        .padding(.horizontal, 8)
                         .padding(.vertical, 6)
+                        .frame(maxWidth: .infinity)
                         .foregroundStyle(isOn ? .white : CMTheme.textPrimary(scheme))
                         .background(
                             Capsule().fill(isOn ? AnyShapeStyle(CMTheme.companyColor(company).gradient) : AnyShapeStyle(CMTheme.base(scheme)))
-                                .shadow(color: CMTheme.shadowDark(scheme), radius: 4, x: 3, y: 3)
-                                .shadow(color: CMTheme.shadowLight(scheme), radius: 4, x: -3, y: -3)
+                                .shadow(color: CMTheme.shadowDark(scheme), radius: 3, x: 2, y: 2)
+                                .shadow(color: CMTheme.shadowLight(scheme), radius: 3, x: -2, y: -2)
                         )
-                        .onTapGesture { toggle(company) }
+                        .contentShape(Capsule())
+                        .onTapGesture { withAnimation(.easeOut(duration: 0.12)) { toggle(company) } }
                 }
             }
         }

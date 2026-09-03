@@ -81,7 +81,7 @@ enum SystemDesignBank {
             id: "lld-rate-limiter",
             title: "Design a Rate Limiter",
             scope: .lld,
-            companies: [.google, .amazon, .microsoft],
+            companies: [.google, .amazon, .microsoft, .openai, .twitter],
             difficulty: .medium,
             prompt: "Design a rate limiter that can be dropped into an API gateway to cap requests per client per time window.",
             clarifyingQuestions: [
@@ -118,7 +118,7 @@ enum SystemDesignBank {
             id: "hld-url-shortener",
             title: "Design a URL Shortener",
             scope: .hld,
-            companies: [.amazon, .google, .microsoft],
+            companies: [.amazon, .google, .microsoft, .twitter, .linkedin],
             difficulty: .medium,
             prompt: "Design a service like bit.ly: given a long URL, return a short one that redirects to it, at scale.",
             clarifyingQuestions: [
@@ -158,7 +158,7 @@ enum SystemDesignBank {
             id: "hld-news-feed",
             title: "Design a News Feed (Social Timeline)",
             scope: .hld,
-            companies: [.google, .amazon, .microsoft, .apple],
+            companies: [.google, .amazon, .microsoft, .apple, .twitter, .meta, .linkedin],
             difficulty: .hard,
             prompt: "Design a system that generates a personalized, roughly-chronological feed of posts from people a user follows, at large scale.",
             clarifyingQuestions: [
@@ -198,7 +198,7 @@ enum SystemDesignBank {
             id: "hld-chat-system",
             title: "Design a Real-Time Chat System",
             scope: .hld,
-            companies: [.google, .microsoft, .amazon],
+            companies: [.google, .microsoft, .amazon, .meta, .linkedin],
             difficulty: .hard,
             prompt: "Design a system like WhatsApp/iMessage: 1:1 and group messaging, delivery/read receipts, online presence.",
             clarifyingQuestions: [
@@ -238,7 +238,7 @@ enum SystemDesignBank {
             id: "hld-web-crawler",
             title: "Design a Web Crawler",
             scope: .hld,
-            companies: [.google, .amazon],
+            companies: [.google, .amazon, .openai],
             difficulty: .hard,
             prompt: "Design a scalable web crawler that discovers and downloads pages across the web, respecting robots.txt and avoiding duplicate/infinite crawls.",
             clarifyingQuestions: [
@@ -305,7 +305,149 @@ enum SystemDesignBank {
                     "How would you add an AI opponent (minimax) behind the same interface?"
                 ])
             ]
+        ),
+
+        SystemDesignQuestion(
+            id: "hld-llm-inference-queue",
+            title: "Design an LLM Inference Serving Queue",
+            scope: .hld,
+            companies: [.openai, .google, .microsoft],
+            difficulty: .hard,
+            prompt: "Design the request-serving layer that sits in front of a large language model: it accepts generation requests, queues and batches them onto a fleet of GPU workers, and streams tokens back to callers.",
+            clarifyingQuestions: [
+                "Is output streamed token-by-token, or returned only once generation finishes?",
+                "Do requests vary a lot in expected output length, and does that matter for scheduling?",
+                "Are there different priority tiers (e.g. paying API customers vs. best-effort batch jobs)?"
+            ],
+            sections: [
+                DesignSection(heading: "Requirements", bullets: [
+                    "Functional: accept a prompt, return generated tokens (streamed); support cancellation mid-generation",
+                    "Non-functional: high GPU utilization (GPUs are the scarce, expensive resource), low time-to-first-token, fairness across tenants"
+                ]),
+                DesignSection(heading: "Core architecture", bullets: [
+                    "API gateway accepts requests, assigns a request ID, pushes onto a priority queue",
+                    "A scheduler dynamically batches multiple requests together onto a single GPU worker's forward pass ('continuous batching') to keep GPUs busy",
+                    "Each GPU worker streams generated tokens back through the gateway to the originating client connection as they're produced"
+                ]),
+                DesignSection(heading: "Key trade-offs", bullets: [
+                    "Larger batches -> better GPU throughput, but can increase time-to-first-token for requests batched in later",
+                    "Static batching (wait for a full batch) is simple but wastes GPU time; continuous/dynamic batching (admit new requests into an in-flight batch) is far more GPU-efficient but more complex to implement",
+                    "KV-cache memory per in-flight request limits how many requests a GPU can serve concurrently -- this, not raw compute, is often the real bottleneck",
+                    "Request queueing needs a fairness policy (e.g. weighted fair queueing across API keys) so one heavy tenant can't starve others"
+                ]),
+                DesignSection(heading: "Good follow-ups to rehearse", bullets: [
+                    "How would you handle a GPU worker crashing mid-batch, without losing every request in that batch?",
+                    "How would you route requests across multiple model versions or model sizes based on request complexity?"
+                ])
+            ]
+        ),
+
+        SystemDesignQuestion(
+            id: "hld-trending-topics",
+            title: "Design a Trending Topics System",
+            scope: .hld,
+            companies: [.twitter, .meta],
+            difficulty: .medium,
+            prompt: "Design a system that surfaces currently-trending hashtags/topics from a huge, continuous stream of posts, updated in near real time.",
+            clarifyingQuestions: [
+                "How 'real time' does trending need to be -- seconds, or is a minute of staleness fine?",
+                "Trending globally, or personalized/localized per region or per user's network?",
+                "Do we need to defend against coordinated spam artificially inflating a topic's count?"
+            ],
+            sections: [
+                DesignSection(heading: "Requirements", bullets: [
+                    "Functional: ingest a high-volume post stream, extract topics/hashtags, surface the top-N trending right now",
+                    "Non-functional: near-real-time updates, must handle massive write throughput without an exact-count database write per post"
+                ]),
+                DesignSection(heading: "Core architecture", bullets: [
+                    "Stream processing layer (e.g. a windowed stream processor) consumes the post firehose and extracts/counts topics over sliding time windows",
+                    "Approximate counting structures (e.g. Count-Min Sketch) avoid needing exact per-topic counters at massive scale, trading small, bounded error for huge memory/throughput savings",
+                    "A top-K structure (e.g. a bounded heap per time window) tracks the current leaderboard without sorting the entire topic space"
+                ]),
+                DesignSection(heading: "Key trade-offs", bullets: [
+                    "'Trending' usually means a topic's rate of increase, not just raw volume -- compare recent-window counts to a longer baseline to detect spikes, not just popularity",
+                    "Approximate counting sacrifices exactness for the throughput needed at this scale -- worth calling out explicitly as a deliberate trade-off",
+                    "Spam/bot detection (e.g. rate-limiting how much a single account can contribute to a topic's count) is essential or the leaderboard is trivially gameable"
+                ]),
+                DesignSection(heading: "Good follow-ups to rehearse", bullets: [
+                    "How would you personalize trends per region without running the whole pipeline once per region?",
+                    "How would you detect and suppress an artificially-boosted (spam/bot) topic?"
+                ])
+            ]
+        ),
+
+        SystemDesignQuestion(
+            id: "hld-streaming-recommendations",
+            title: "Design a Video Streaming & Recommendation Service",
+            scope: .hld,
+            companies: [.netflix, .amazon, .google],
+            difficulty: .hard,
+            prompt: "Design the core of a video streaming service: efficient global video delivery, plus a personalized 'what to watch next' recommendation feed on the home screen.",
+            clarifyingQuestions: [
+                "Are we designing delivery (CDN/encoding), recommendations, or both end to end?",
+                "Personalized recommendations, or also 'trending now' / editorially curated rows?",
+                "What's the acceptable staleness for recommendations -- do they need to react to what a user just watched minutes ago?"
+            ],
+            sections: [
+                DesignSection(heading: "Requirements", bullets: [
+                    "Functional: stream video with adaptive quality; serve a personalized, ranked list of recommended titles",
+                    "Non-functional: low startup/buffering latency globally, recommendations must scale to a huge catalog and user base"
+                ]),
+                DesignSection(heading: "Delivery architecture", bullets: [
+                    "Videos are pre-encoded at multiple bitrates/resolutions; a CDN caches and serves segments close to the viewer (adaptive bitrate streaming, e.g. HLS/DASH)",
+                    "Origin storage holds the master encodes; CDN edge nodes are populated lazily or pre-warmed for anticipated-popular titles"
+                ]),
+                DesignSection(heading: "Recommendation architecture", bullets: [
+                    "Offline/batch layer: periodically trains a recommendation model on historical watch/rating data (collaborative filtering, embeddings, etc.)",
+                    "Online/serving layer: given a user, fetches a candidate set (from the offline model output, cached), then re-ranks using recent signals (what they just watched, time of day)",
+                    "A candidate-generation + re-ranking split keeps the expensive model work offline while the online path stays fast"
+                ]),
+                DesignSection(heading: "Key trade-offs", bullets: [
+                    "Pre-computing recommendations per user (push) is fast to serve but goes stale between batch runs; computing on-demand (pull) is fresher but more expensive per request -- most real systems hybridize, similar to the news-feed fan-out trade-off",
+                    "CDN cache-hit rate dominates delivery cost and latency -- predicting which titles need pre-warming where is its own sub-problem",
+                    "Cold-start (new user or new title with no watch history) needs a fallback strategy (popularity-based or content-based, not pure collaborative filtering)"
+                ]),
+                DesignSection(heading: "Good follow-ups to rehearse", bullets: [
+                    "How would you A/B test a new recommendation model safely against the current one?",
+                    "How would you handle a sudden regional spike in demand for one newly-released title?"
+                ])
+            ]
+        ),
+
+        SystemDesignQuestion(
+            id: "hld-ride-hailing-dispatch",
+            title: "Design a Ride-Hailing Dispatch System",
+            scope: .hld,
+            companies: [.uber, .google, .amazon],
+            difficulty: .hard,
+            prompt: "Design the core matching system for a ride-hailing app: continuously track nearby available drivers and match them to incoming ride requests in real time.",
+            clarifyingQuestions: [
+                "What's an acceptable match latency -- sub-second, or a few seconds is fine?",
+                "Do we optimize purely for nearest driver, or also for fairness/earnings balance across drivers?",
+                "How often do driver locations update, and how many concurrent drivers/riders are we targeting in one city?"
+            ],
+            sections: [
+                DesignSection(heading: "Requirements", bullets: [
+                    "Functional: drivers continuously report location; riders request a ride; the system matches a rider to a nearby available driver",
+                    "Non-functional: low-latency matching, must scale to a dense city with many thousands of concurrent drivers reporting location every few seconds"
+                ]),
+                DesignSection(heading: "Core architecture", bullets: [
+                    "Drivers stream location updates over a persistent connection to a location service, which indexes them geospatially",
+                    "A geospatial index (e.g. a grid/geohash or quadtree over the city) lets the matcher query 'available drivers near this rider' in roughly constant time instead of scanning all drivers",
+                    "A matching service takes a ride request, queries nearby available drivers from the index, ranks candidates (distance, ETA, driver rating), and dispatches a request to the chosen driver"
+                ]),
+                DesignSection(heading: "Key trade-offs", bullets: [
+                    "Geohash/grid-cell indexing is simple and fast but has edge effects near cell boundaries (nearest driver might be in an adjacent cell) -- typically mitigated by also checking neighboring cells",
+                    "Driver location data is high-write, low-durability-requirement (a stale-by-a-few-seconds location is fine) -- a good candidate for in-memory storage rather than a durable database on the hot path",
+                    "Matching is inherently a trade-off between 'nearest driver' (best for this rider) and city-wide efficiency (best overall) -- pure greedy nearest-match can leave the system globally worse off during high demand"
+                ]),
+                DesignSection(heading: "Good follow-ups to rehearse", bullets: [
+                    "How would you handle surge pricing/demand spikes overwhelming available driver supply in one area?",
+                    "How would you make matching resilient to a driver going offline right after being matched?"
+                ])
+            ]
         )
+
     ]
 
     static func question(id: String) -> SystemDesignQuestion? {

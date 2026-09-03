@@ -17,10 +17,19 @@ enum AppSection: String, CaseIterable, Identifiable {
 
 struct RootView: View {
     @Environment(\.colorScheme) private var scheme
+    @Environment(AppPreferences.self) private var prefs
     @State private var section: AppSection = .practice
     @State private var showsSettings = false
 
     var body: some View {
+        if prefs.hasOnboarded {
+            mainView
+        } else {
+            OnboardingView()
+        }
+    }
+
+    private var mainView: some View {
         NavigationSplitView {
             List(AppSection.allCases, selection: $section) { item in
                 Label(item.rawValue, systemImage: item.symbol)
@@ -57,7 +66,7 @@ struct RootView: View {
         .navigationSplitViewStyle(.balanced)
         .sheet(isPresented: $showsSettings) {
             SettingsView()
-                .frame(width: 480, height: 460)
+                .frame(width: 520, height: 600)
         }
     }
 }
