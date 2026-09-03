@@ -1,17 +1,31 @@
 import Foundation
 import Security
 
-/// Minimal Keychain wrapper for storing the user's own Anthropic API key
-/// locally on-device. CodeMate never ships with an embedded key and never
-/// sends the key anywhere except https://api.anthropic.com.
+/// Minimal Keychain wrapper. Used for the user's own Anthropic API key
+/// (CodeMate never ships with an embedded key and never sends it anywhere
+/// except https://api.anthropic.com) and for the direct-sale license key.
 enum KeychainService {
-    private static let service = "com.codemate.app.anthropic-api-key"
+    private static let apiKeyService = "com.codemate.app.anthropic-api-key"
 
     static func save(apiKey: String) {
-        let data = Data(apiKey.utf8)
+        saveGenericString(apiKey, key: apiKeyService)
+    }
+
+    static func loadAPIKey() -> String? {
+        loadGenericString(key: apiKeyService)
+    }
+
+    static func clear() {
+        deleteGenericString(key: apiKeyService)
+    }
+
+    // MARK: - Generic string storage (also used by LicenseManager)
+
+    static func saveGenericString(_ value: String, key: String) {
+        let data = Data(value.utf8)
         let query: [String: Any] = [
             kSecClass as String: kSecClassGenericPassword,
-            kSecAttrService as String: service
+            kSecAttrService as String: key
         ]
         SecItemDelete(query as CFDictionary)
 
@@ -20,10 +34,10 @@ enum KeychainService {
         SecItemAdd(attributes as CFDictionary, nil)
     }
 
-    static func loadAPIKey() -> String? {
+    static func loadGenericString(key: String) -> String? {
         let query: [String: Any] = [
             kSecClass as String: kSecClassGenericPassword,
-            kSecAttrService as String: service,
+            kSecAttrService as String: key,
             kSecReturnData as String: true,
             kSecMatchLimit as String: kSecMatchLimitOne
         ]
@@ -33,10 +47,10 @@ enum KeychainService {
         return String(data: data, encoding: .utf8)
     }
 
-    static func clear() {
+    static func deleteGenericString(key: String) {
         let query: [String: Any] = [
             kSecClass as String: kSecClassGenericPassword,
-            kSecAttrService as String: service
+            kSecAttrService as String: key
         ]
         SecItemDelete(query as CFDictionary)
     }

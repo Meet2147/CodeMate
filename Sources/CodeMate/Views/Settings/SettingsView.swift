@@ -4,7 +4,7 @@ struct SettingsView: View {
     @Environment(\.colorScheme) private var scheme
     @Environment(\.dismiss) private var dismiss
     @Environment(AppPreferences.self) private var prefs
-    @Environment(StoreManager.self) private var store
+    @Environment(LicenseManager.self) private var licenseManager
     @State private var apiKey: String = KeychainService.loadAPIKey() ?? ""
     @State private var savedConfirmation = false
     @State private var showsCompanyPicker = false
@@ -40,17 +40,17 @@ struct SettingsView: View {
                 VStack(alignment: .leading, spacing: 2) {
                     HStack(spacing: 6) {
                         Image(systemName: "star.fill").foregroundStyle(CMTheme.accent)
-                        Text("CodeMate \(store.currentTier.displayName)")
+                        Text("CodeMate \(licenseManager.currentTier.displayName)")
                             .font(.system(size: 13, weight: .bold))
                             .foregroundStyle(CMTheme.textPrimary(scheme))
                     }
-                    Text(store.currentTier == .max ? "You have everything, unlimited." : store.currentTier.tagline)
+                    Text(licenseManager.currentTier == .max ? "You have everything, unlimited." : licenseManager.currentTier.tagline)
                         .font(.system(size: 11))
                         .foregroundStyle(CMTheme.textSecondary(scheme))
                 }
                 Spacer()
-                Button(store.currentTier == .free ? "Upgrade" : "Manage Plan") { showsPaywall = true }
-                    .buttonStyle(NeumorphicButtonStyle(tint: CMTheme.accent, prominent: store.currentTier == .free))
+                Button(licenseManager.currentTier == .free ? "Upgrade" : "Manage Plan") { showsPaywall = true }
+                    .buttonStyle(NeumorphicButtonStyle(tint: CMTheme.accent, prominent: licenseManager.currentTier == .free))
             }
             .neumorphicRaised(padding: 16)
 

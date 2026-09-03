@@ -1,12 +1,20 @@
 import SwiftUI
-import StoreKit
 
+/// Direct-sale paywall: CodeMate isn't distributed through the Mac App
+/// Store, so this can't use StoreKit's in-app purchase() -- there's no App
+/// Store receipt to validate outside that sandbox. Instead it opens a
+/// hosted checkout link (Stripe/Paddle/Gumroad -- wire up the real URLs
+/// below) and lets the buyer redeem the license key they're emailed after
+/// paying. See LicenseCodec/Tools/generate_license.swift for how keys are
+/// minted.
 struct PaywallView: View {
     @Environment(\.colorScheme) private var scheme
     @Environment(\.dismiss) private var dismiss
-    @Environment(StoreManager.self) private var store
+    @Environment(LicenseManager.self) private var licenseManager
+    @Environment(\.openURL) private var openURL
     @State private var billing: SubscriptionPlan.BillingPeriod = .monthly
-    @State private var purchasingProductID: String?
+    @State private var licenseKeyDraft: String = ""
+    @State private var redeemedConfirmation = false
 
     var body: some View {
         VStack(spacing: 0) {
@@ -21,23 +29,14 @@ struct PaywallView: View {
                     }
                     .padding(.horizontal, 4)
 
-                    if let lastError = store.lastError {
-                        Text(lastError)
-                            .font(.system(size: 11))
-                            .foregroundStyle(CMTheme.danger)
-                    }
-
-                    Button("Restore Purchases") { Task { await store.restorePurchases() } }
-                        .buttonStyle(.plain)
-                        .font(.system(size: 11))
-                        .foregroundStyle(CMTheme.textSecondary(scheme))
-                        .padding(.bottom, 8)
+                    redeemSection
                 }
                 .padding(24)
             }
         }
-        .frame(width: 860, height: 700)
+        .frame(width: 860, height: 760)
         .background(CMTheme.base(scheme))
+        .onAppear { licenseKeyDraft = "" }
     }
 
     private var header: some View {
@@ -46,7 +45,7 @@ struct PaywallView: View {
                 Text("Upgrade CodeMate")
                     .font(.system(size: 18, weight: .bold, design: .rounded))
                     .foregroundStyle(CMTheme.textPrimary(scheme))
-                Text("You're currently on \(store.currentTier.displayName).")
+                Text("You're currently on \(licenseManager.currentTier.displayName).")
                     .font(.system(size: 11))
                     .foregroundStyle(CMTheme.textSecondary(scheme))
             }
@@ -69,8 +68,7 @@ struct PaywallView: View {
     @ViewBuilder
     private func tierCard(_ tier: SubscriptionTier) -> some View {
         let plan = SubscriptionCatalog.plan(tier: tier, billing: billing)
-        let product = plan.flatMap { store.product(for: $0) }
-        let isCurrent = store.currentTier == tier
+        let isCurrent = licenseManager.currentTier == tier
         let isPopular = tier == .pro
 
         VStack(spacing: 0) {
@@ -107,7 +105,7 @@ struct PaywallView: View {
                 }
 
                 VStack(spacing: 2) {
-                    Text(priceText(tier: tier, product: product, plan: plan))
+                    Text(tier == .free ? "$0" : (plan?.placeholderPrice ?? "—"))
                         .font(.system(size: 30, weight: .bold, design: .rounded))
                         .foregroundStyle(CMTheme.textPrimary(scheme))
                     Text(priceCaption(tier: tier, plan: plan))
@@ -116,7 +114,7 @@ struct PaywallView: View {
                 }
                 .frame(height: 56)
 
-                actionButton(tier: tier, product: product, isCurrent: isCurrent)
+                actionButton(tier: tier, plan: plan, isCurrent: isCurrent)
 
                 Divider()
 
@@ -152,12 +150,6 @@ struct PaywallView: View {
         .frame(maxWidth: .infinity)
     }
 
-    private func priceText(tier: SubscriptionTier, product: Product?, plan: SubscriptionPlan?) -> String {
-        if tier == .free { return "$0" }
-        if let product { return product.displayPrice }
-        return plan?.placeholderPrice ?? "—"
-    }
-
     private func priceCaption(tier: SubscriptionTier, plan: SubscriptionPlan?) -> String {
         switch tier {
         case .free: return "free forever, no card needed"
@@ -166,7 +158,7 @@ struct PaywallView: View {
     }
 
     @ViewBuilder
-    private func actionButton(tier: SubscriptionTier, product: Product?, isCurrent: Bool) -> some View {
+    private func actionButton(tier: SubscriptionTier, plan: SubscriptionPlan?, isCurrent: Bool) -> some View {
         if isCurrent {
             Text("Current Plan")
                 .frame(maxWidth: .infinity)
@@ -175,7 +167,7 @@ struct PaywallView: View {
                 .padding(.vertical, 10)
                 .background(RoundedRectangle(cornerRadius: CMTheme.smallCornerRadius).fill(CMTheme.shadowDark(scheme).opacity(0.15)))
         } else if tier == .free {
-            Text("Manage your plan in System Settings")
+            Text("Downgrade anytime by letting a paid license lapse")
                 .frame(maxWidth: .infinity)
                 .font(.system(size: 10.5, weight: .medium))
                 .foregroundStyle(CMTheme.textSecondary(scheme))
@@ -183,21 +175,64 @@ struct PaywallView: View {
                 .padding(.vertical, 10)
         } else {
             Button {
-                guard let product else { return }
-                purchasingProductID = product.id
-                Task {
-                    await store.purchase(product)
-                    purchasingProductID = nil
-                }
+                if let url = plan?.purchaseURL { openURL(url) }
             } label: {
-                if purchasingProductID == product?.id {
-                    ProgressView().controlSize(.small).frame(maxWidth: .infinity)
-                } else {
-                    Text("get \(tier.displayName)").frame(maxWidth: .infinity)
-                }
+                Text("buy \(tier.displayName)").frame(maxWidth: .infinity)
             }
             .buttonStyle(NeumorphicButtonStyle(tint: tier == .max ? CMTheme.accent : CMTheme.success, prominent: true))
-            .disabled(product == nil || purchasingProductID != nil)
         }
+    }
+
+    private var redeemSection: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Text("HAVE A LICENSE KEY?")
+                .font(.system(size: 10, weight: .bold))
+                .foregroundStyle(CMTheme.textSecondary(scheme))
+            Text("After buying above, you'll get a license key by email -- paste it here to unlock instantly.")
+                .font(.system(size: 11))
+                .foregroundStyle(CMTheme.textSecondary(scheme))
+
+            HStack(spacing: 10) {
+                TextField("Paste your license key", text: $licenseKeyDraft)
+                    .textFieldStyle(.plain)
+                    .font(.system(size: 12, design: .monospaced))
+                    .neumorphicInset(padding: 10)
+                Button("Redeem") {
+                    if licenseManager.redeem(key: licenseKeyDraft) {
+                        redeemedConfirmation = true
+                        licenseKeyDraft = ""
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 2.5) { redeemedConfirmation = false }
+                    }
+                }
+                .buttonStyle(NeumorphicButtonStyle(prominent: true))
+                .disabled(licenseKeyDraft.trimmingCharacters(in: .whitespaces).isEmpty)
+            }
+
+            if redeemedConfirmation {
+                Label("License applied -- you're on \(licenseManager.currentTier.displayName) now.", systemImage: "checkmark.circle.fill")
+                    .font(.system(size: 11, weight: .semibold))
+                    .foregroundStyle(CMTheme.success)
+            } else if let error = licenseManager.lastError {
+                Text(error)
+                    .font(.system(size: 11))
+                    .foregroundStyle(CMTheme.danger)
+            }
+
+            if let license = licenseManager.license {
+                HStack(spacing: 6) {
+                    Image(systemName: "checkmark.seal.fill").foregroundStyle(CMTheme.success)
+                    Text("Active: \(license.tier.displayName)" + (license.expiresAt.map { " · renews \($0.formatted(date: .abbreviated, time: .omitted))" } ?? " · lifetime"))
+                        .font(.system(size: 11))
+                        .foregroundStyle(CMTheme.textSecondary(scheme))
+                    Spacer()
+                    Button("Remove") { licenseManager.removeLicense() }
+                        .buttonStyle(.plain)
+                        .font(.system(size: 10, weight: .semibold))
+                        .foregroundStyle(CMTheme.danger)
+                }
+                .padding(.top, 4)
+            }
+        }
+        .neumorphicRaised(padding: 16)
     }
 }

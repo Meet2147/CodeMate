@@ -3,7 +3,7 @@ import SwiftData
 
 struct PracticeHomeView: View {
     @Environment(AppPreferences.self) private var prefs
-    @Environment(StoreManager.self) private var store
+    @Environment(LicenseManager.self) private var licenseManager
     @Query private var progressRecords: [ProblemProgress]
 
     @State private var searchText = ""
@@ -20,7 +20,7 @@ struct PracticeHomeView: View {
 
     /// Companies this plan doesn't include. nil maxTargetCompanies means unlimited.
     private var lockedCompanies: Set<Company> {
-        guard let maxCount = store.currentTier.maxTargetCompanies else { return [] }
+        guard let maxCount = licenseManager.currentTier.maxTargetCompanies else { return [] }
         let allowed = allowedCompanies(maxCount: maxCount)
         return Set(Company.allCases).subtracting(allowed)
     }

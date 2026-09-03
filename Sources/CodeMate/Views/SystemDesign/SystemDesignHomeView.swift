@@ -2,7 +2,7 @@ import SwiftUI
 
 struct SystemDesignHomeView: View {
     @Environment(AppPreferences.self) private var prefs
-    @Environment(StoreManager.self) private var store
+    @Environment(LicenseManager.self) private var licenseManager
     @State private var selectedScope: DesignScope?
     @State private var selectedCompanies: Set<Company> = []
     @State private var selectedId: String?
@@ -10,7 +10,7 @@ struct SystemDesignHomeView: View {
     @State private var showsPaywall = false
 
     private var lockedCompanies: Set<Company> {
-        guard let maxCount = store.currentTier.maxTargetCompanies else { return [] }
+        guard let maxCount = licenseManager.currentTier.maxTargetCompanies else { return [] }
         let ordered = Company.allCases.filter { prefs.targetCompanies.contains($0) }
         let base = ordered.isEmpty ? Array(Company.allCases.prefix(maxCount)) : ordered
         return Set(Company.allCases).subtracting(Set(base.prefix(maxCount)))

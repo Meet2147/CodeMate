@@ -2,94 +2,129 @@
 
 A native SwiftUI macOS app that helps students prepare for DSA and system-design
 interviews at Amazon, Google, Apple, Microsoft, Meta, Netflix, OpenAI, Twitter/X,
-Uber, and LinkedIn, with an in-app AI assistant, company-targeted onboarding,
-neumorphic ("soft UI") design, and local progress tracking.
+Uber, and LinkedIn — an always-on-device AI assistant (no API key, no per-message
+cost), an IDE-styled practice workspace, company-targeted onboarding, Free/Pro/Max
+tiers sold directly (not through the Mac App Store), and a SharePlay-based
+"practice together" video call.
 
 ## What's in this MVP
 
 - **Onboarding** — on first launch, pick which companies you're interviewing
-  with (multi-select, skippable). The Practice and LLD/HLD tabs open
-  pre-filtered to those companies, with questions that overlap more of your
-  targets surfaced first under a "Frequently asked at {Company}" header.
-  Changeable anytime from Settings → Target Companies.
+  with (multi-select, skippable). Practice and LLD/HLD open pre-filtered to
+  those companies, with questions overlapping more of your targets surfaced
+  first under a "Frequently asked at {Company}" header. Changeable anytime
+  from Settings → Target Companies.
 - **DSA Practice** — 74 curated problems (original phrasing) across all three
   difficulty tiers, filterable by company, topic, and difficulty. Each has a
   problem statement, examples, constraints, a progressive hint ladder, and a
-  "choose an approach" panel comparing brute-force → optimal solutions with
-  time/space complexity.
-- **Code editor** — line-numbered, monospaced, per-language starter code
-  (Swift/Python/JS/Java/C++). Swift, Python, and JavaScript run locally via
-  the system toolchain for quick sanity checks.
-- **AI Assistant** — a chat panel grounded on the current problem + the
-  student's own code. Calls the Anthropic API using a key the student enters
-  in Settings (stored in Keychain, BYO-key — nothing is embedded in the
-  shipped app). Falls back to a deterministic offline assistant (hints,
-  approach comparison, complexity) when no key is set, so it's never a dead
-  end.
-- **LLD / HLD** — 12 system-design questions (parking lot, elevator, rate
-  limiter, URL shortener, news feed, chat system, web crawler, tic-tac-toe
-  engine, an LLM inference serving queue, a trending-topics system, a video
-  streaming/recommendation service, and a ride-hailing dispatch system) with
-  clarifying questions and a requirements → entities → data model → scaling
-  scaffold, coached by the same assistant.
+  "choose an approach" panel comparing brute-force → optimal solutions.
+- **IDE-styled workspace** — the problem list is a dark file-explorer (not
+  cards), the workspace has a tab bar ("two_sum.swift", closable) and a
+  status bar, and the code editor is a real resizable/growable NSTextView
+  with line numbers. This chrome (`Design/IDETheme.swift`) is deliberately
+  separate from the softer neumorphic look used by onboarding/Settings/
+  Progress — the same way a real IDE's editor differs from its surrounding
+  app chrome.
+- **On-device AI Assistant** — runs via Apple's on-device Foundation Models
+  framework (`Services/OnDeviceAssistantService.swift`) by default: free,
+  private, no API key, nothing leaves the Mac. Falls back to a BYO Anthropic
+  cloud key (Settings, Keychain-stored) on unsupported hardware/OS, then to
+  a deterministic offline assistant using each problem's own hints/approach
+  notes — never a dead end.
+- **LLD / HLD** — 12 system-design questions, including four written for the
+  newer companies (an LLM inference serving queue for OpenAI, a trending-
+  topics system for Twitter/X, a streaming/recommendation service for
+  Netflix, a ride-hailing dispatch system for Uber).
+- **Practice Together (beta)** — one-on-one SharePlay session
+  (`Models/PracticeCallActivity.swift`, `Services/PracticeCallCoordinator.swift`)
+  so two people on a FaceTime call can work the same problem together;
+  FaceTime carries audio/video, CodeMate only syncs the shared code. Real,
+  compiling GroupActivities integration, but it needs two actual Macs on a
+  FaceTime call to exercise end-to-end — not something testable in this
+  environment.
+- **Free / Pro / Max tiers, sold directly** — gated on target-company access
+  (Free = 1 company, Pro/Max = all 10) via a locked-chip state in the company
+  filter; a matching `PaywallView` shows pricing. Because this is **not**
+  distributed through the Mac App Store, StoreKit's `Product`/`Transaction`
+  APIs don't apply (there's no App Store receipt to validate outside that
+  sandbox) — entitlement instead comes from an offline, HMAC-signed license
+  key (`Models/License.swift`), redeemed in Settings/Paywall and stored in
+  Keychain. `Tools/generate_license.swift` is the seller-side script that
+  mints a key after a sale goes through your payment processor of choice
+  (Stripe/Paddle/Gumroad — none of that is built here, only the signing).
+  `Services/StoreManager.swift` (StoreKit 2, tested via `StoreKit/CodeMate.storekit`)
+  is kept in the project, unwired, for a possible future *separate* Mac App
+  Store SKU.
 - **Progress tracking** — local SwiftData store: per-problem solve status,
-  saved code/notes, hints used; a Progress tab breaks it down by company and
-  topic.
-- **Neumorphic design system** (`Design/NeumorphicStyle.swift`) — soft
-  raised/inset surfaces, light + dark mode, company brand accents.
+  saved code/notes, hints used; a Progress tab breaks it down by company/topic.
+- **App icon** (`Marketing/icon/`) — generated via SwiftUI's `ImageRenderer`
+  (`Tools/generate_icon.swift`), not a placeholder.
 
 ## Running it
 
-Requires Xcode 15+ / macOS 14+.
+Requires Xcode 15+ / macOS 14+ (the on-device assistant additionally needs
+macOS 26+ with Apple Intelligence enabled; the app degrades gracefully
+without it).
 
 ```bash
-swift run CodeMate       # run from the command line
+swift run CodeMate                 # run from the command line
+./Scripts/build_app.sh && open build/CodeMate.app   # or as a real .app bundle, with icon
 ```
 
-Or open `Package.swift` directly in Xcode (File > Open) and hit Run — Xcode
-treats a SwiftUI executable package like a normal app target, including the
-"Signing & Capabilities" tab you'll need for distribution.
+Or open `Package.swift` directly in Xcode (File > Open) and hit Run.
 
-## What's still needed before selling this
+## Before you actually sell this
 
-This is a working MVP, not a store-ready product yet:
-
-1. **App icon, launch assets, proper code signing & notarization** for
-   distribution outside the Mac App Store, or an App Store Connect listing
-   (screenshots, privacy nutrition label, review) if going through the Store.
-2. **Monetization** — no paywall/StoreKit wired up yet. Decide: one-time
-   purchase, subscription (StoreKit 2), or the BYO-API-key model stays free
-   and you charge for the app itself.
-3. **Content scale** — 74 problems / 12 design questions is a strong seed set;
-   a sellable "prep" product typically wants 150–300+ problems. The data
-   model (`Data/ProblemBank.swift`, `Data/SystemDesignBank.swift`) is a plain
-   Swift array, so this scales by adding entries, or by moving to a bundled
-   JSON/remote content pack later without touching the UI.
-4. **Sandboxed code execution** — the current local runner shells out to
-   `swift`/`python3`/`node` directly (fine for a student running their own
-   code on their own Mac). If you ever run untrusted code server-side, that
-   needs a real sandbox, not this.
-5. **Real syntax highlighting** — the editor is a clean, functional
-   NSTextView with line numbers; token-based highlighting isn't wired in yet.
-6. **Tests** — no unit/UI test target yet.
+1. **Replace the license signing secret.** `Models/License.swift` and
+   `Tools/generate_license.swift` both have `sharedSecret =
+   "REPLACE_ME_WITH_A_PRIVATE_SIGNING_SECRET"` — change it to a real private
+   value in both places (keep it out of version control for the real repo)
+   before shipping, or anyone can mint their own "paid" license.
+2. **Stand up actual checkout.** `SubscriptionCatalog`'s `purchaseURL`s are
+   placeholders (`https://buy.codemate.app/...`). Point them at real Stripe
+   Payment Links / Paddle / Gumroad checkout pages, and have whatever tool
+   you use email the buyer a key generated by `Tools/generate_license.swift`
+   (manually at first; automate later via that processor's webhook).
+3. **Code signing & notarization** — required for a direct download to open
+   without a Gatekeeper warning. Needs an Apple Developer account and
+   `codesign`/`notarytool`, not covered here.
+4. **Content scale** — 74 problems / 12 design questions is a strong seed;
+   a sellable "prep" product typically wants 150–300+. Both banks are plain
+   Swift arrays (`Data/`), so this scales by adding entries.
+5. **Sandboxed code execution** — the local runner shells out to
+   `swift`/`python3`/`node` directly, fine for a student running their own
+   code on their own Mac; not something to reuse server-side.
+6. **Real syntax highlighting** — the editor has line numbers but no
+   token-based highlighting yet.
+7. **Tests** — no unit/UI test target yet.
 
 ## Project layout
 
 ```
 Sources/CodeMate/
-  CodeMateApp.swift          App entry point, SwiftData container, AppPreferences injection
-  Design/                    Neumorphic style system
-  Models/                    Problem, Company, Topic, SystemDesign, progress, assistant message, AppPreferences
+  CodeMateApp.swift          App entry point, SwiftData container, environment injection
+  Design/                    NeumorphicStyle (app chrome) + IDETheme (coding surfaces)
+  Models/                    Problem, Company, SystemDesign, AppPreferences, SubscriptionTier,
+                              License, PracticeCallActivity
   Data/                      Curated problem bank + system-design bank
-  Services/                  Anthropic/offline assistant, Keychain, local code runner
+  Services/                  On-device/Anthropic/offline assistant, Keychain, local code runner,
+                              StoreManager (dormant), LicenseManager, PracticeCallCoordinator
   Views/
     Onboarding/               First-launch company picker + reusable CompanyPickerGrid
     Root/                    Navigation shell, Progress tab
-    ProblemList/              Practice tab: filters + problem list
-    Sidebar/                  Filter chip components
-    Workspace/                Problem detail: statement, approaches, hints
+    ProblemList/              Practice tab: filters + IDE-style problem explorer
+    Sidebar/                  Filter components (company dropdown, topic, difficulty)
+    Workspace/                Problem workspace: tab bar, statement, approaches, hints, status bar
     Editor/                   Code editor (NSViewRepresentable)
     Assistant/                AI chat panel
-    SystemDesign/              LLD/HLD tab
-    Settings/                  API key entry, target-company picker
+    SystemDesign/              LLD/HLD tab (matching IDE treatment)
+    Settings/                  Assistant status, target companies, subscription
+    Paywall/                  Free/Pro/Max pricing + license redemption
+Tools/
+  generate_icon.swift         Renders Marketing/icon/* from the SwiftUI logo view
+  generate_license.swift      Seller-side: mints a signed license key
+Scripts/
+  build_app.sh                Builds a local CodeMate.app (icon + Info.plist) for testing
+StoreKit/CodeMate.storekit    Local StoreKit config (for the dormant Mac-App-Store path)
+Marketing/icon/                Generated app icon PNGs + .icns
 ```

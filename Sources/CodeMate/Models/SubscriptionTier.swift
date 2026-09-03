@@ -1,6 +1,6 @@
 import Foundation
 
-enum SubscriptionTier: String, CaseIterable, Identifiable, Comparable {
+enum SubscriptionTier: String, CaseIterable, Identifiable, Comparable, Codable {
     case free, pro, max
 
     var id: String { rawValue }
@@ -79,10 +79,14 @@ struct SubscriptionPlan: Identifiable {
     var tier: SubscriptionTier
     var billing: BillingPeriod
     var productID: String
-    /// Placeholder price shown before StoreKit products load (or if the
-    /// StoreKit configuration/App Store Connect products aren't set up
-    /// yet). Real price comes from `Product.displayPrice` once loaded.
+    /// Shown price. For a Mac App Store build (StoreManager wired up),
+    /// prefer `Product.displayPrice` once products load; this is what's
+    /// shown for direct sales, where there's no StoreKit product to ask.
     var placeholderPrice: String
+    /// Hosted checkout link (Stripe/Paddle/Gumroad -- replace with your
+    /// real payment-processor URL before shipping). Opens in the browser;
+    /// the buyer redeems the emailed license key back in the app.
+    var purchaseURL: URL?
 
     enum BillingPeriod: String {
         case monthly = "per month, billed monthly"
@@ -91,10 +95,10 @@ struct SubscriptionPlan: Identifiable {
 }
 
 enum SubscriptionCatalog {
-    static let proMonthly = SubscriptionPlan(tier: .pro, billing: .monthly, productID: "com.codemate.app.pro.monthly", placeholderPrice: "$9.99")
-    static let proYearly = SubscriptionPlan(tier: .pro, billing: .yearly, productID: "com.codemate.app.pro.yearly", placeholderPrice: "$79.99")
-    static let maxMonthly = SubscriptionPlan(tier: .max, billing: .monthly, productID: "com.codemate.app.max.monthly", placeholderPrice: "$19.99")
-    static let maxYearly = SubscriptionPlan(tier: .max, billing: .yearly, productID: "com.codemate.app.max.yearly", placeholderPrice: "$149.99")
+    static let proMonthly = SubscriptionPlan(tier: .pro, billing: .monthly, productID: "com.codemate.app.pro.monthly", placeholderPrice: "$9.99", purchaseURL: URL(string: "https://buy.codemate.app/pro-monthly"))
+    static let proYearly = SubscriptionPlan(tier: .pro, billing: .yearly, productID: "com.codemate.app.pro.yearly", placeholderPrice: "$79.99", purchaseURL: URL(string: "https://buy.codemate.app/pro-yearly"))
+    static let maxMonthly = SubscriptionPlan(tier: .max, billing: .monthly, productID: "com.codemate.app.max.monthly", placeholderPrice: "$19.99", purchaseURL: URL(string: "https://buy.codemate.app/max-monthly"))
+    static let maxYearly = SubscriptionPlan(tier: .max, billing: .yearly, productID: "com.codemate.app.max.yearly", placeholderPrice: "$149.99", purchaseURL: URL(string: "https://buy.codemate.app/max-yearly"))
 
     static let allPlans = [proMonthly, proYearly, maxMonthly, maxYearly]
     static let allProductIDs = allPlans.map(\.productID)
