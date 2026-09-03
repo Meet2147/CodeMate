@@ -2,7 +2,6 @@ import SwiftUI
 import SwiftData
 
 struct PracticeHomeView: View {
-    @Environment(\.colorScheme) private var scheme
     @Environment(AppPreferences.self) private var prefs
     @Environment(StoreManager.self) private var store
     @Query private var progressRecords: [ProblemProgress]
@@ -58,7 +57,7 @@ struct PracticeHomeView: View {
 
     var body: some View {
         HStack(spacing: 0) {
-            VStack(alignment: .leading, spacing: 16) {
+            VStack(alignment: .leading, spacing: 14) {
                 header
                 searchField
                 CompanyFilterBar(selected: $selectedCompanies, lockedCompanies: lockedCompanies) { _ in
@@ -66,9 +65,16 @@ struct PracticeHomeView: View {
                 }
                 TopicFilterMenu(selected: $selectedTopics)
                 DifficultyFilterBar(selected: $selectedDifficulties)
-                Divider().padding(.vertical, 4)
+
+                HStack {
+                    Text("EXPLORER").font(.system(size: 9.5, weight: .bold)).foregroundStyle(IDETheme.textTertiary).kerning(0.6)
+                    Spacer()
+                    Text("\(filtered.count)").font(.system(size: 9.5, weight: .semibold)).foregroundStyle(IDETheme.textTertiary)
+                }
+                .padding(.top, 2)
+
                 ScrollView {
-                    LazyVStack(spacing: 10) {
+                    LazyVStack(spacing: 1) {
                         ForEach(filtered) { problem in
                             ProblemRowView(
                                 problem: problem,
@@ -79,22 +85,23 @@ struct PracticeHomeView: View {
                         }
                         if filtered.isEmpty {
                             Text("No problems match these filters yet.")
-                                .foregroundStyle(CMTheme.textSecondary(scheme))
+                                .font(.system(size: 11.5))
+                                .foregroundStyle(IDETheme.textSecondary)
                                 .padding(.top, 40)
                         }
                     }
                     .padding(.bottom, 24)
                 }
             }
-            .padding(16)
-            .frame(width: 320)
-            .background(CMTheme.base(scheme))
+            .padding(14)
+            .frame(width: 300)
+            .background(IDETheme.sidebarBackground)
 
-            Divider()
+            Rectangle().fill(IDETheme.border).frame(width: 1)
 
             Group {
                 if let id = selectedProblemId, let problem = ProblemBank.problem(id: id) {
-                    ProblemWorkspaceView(problem: problem)
+                    ProblemWorkspaceView(problem: problem, onClose: { selectedProblemId = nil })
                         .id(problem.id)
                 } else {
                     EmptyWorkspacePlaceholder()
@@ -102,6 +109,7 @@ struct PracticeHomeView: View {
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
+        .environment(\.colorScheme, .dark)
         .onAppear {
             guard !hasSeededFromPreferences else { return }
             hasSeededFromPreferences = true
@@ -115,46 +123,50 @@ struct PracticeHomeView: View {
     private var header: some View {
         VStack(alignment: .leading, spacing: 4) {
             Text("DSA Practice")
-                .font(.system(size: 24, weight: .bold, design: .rounded))
-                .foregroundStyle(CMTheme.textPrimary(scheme))
+                .font(.system(size: 20, weight: .bold, design: .rounded))
+                .foregroundStyle(IDETheme.textPrimary)
             if effectiveSelectedCompanies.count == 1, let company = effectiveSelectedCompanies.first {
-                Text("Frequently asked at \(company.rawValue) -- \(filtered.count) problems")
-                    .font(.system(size: 11.5, weight: .semibold))
+                Text("Frequently asked at \(company.rawValue)")
+                    .font(.system(size: 11, weight: .semibold))
                     .foregroundStyle(CMTheme.companyColor(company))
             } else {
                 Text("\(filtered.count) of \(ProblemBank.all.count) problems")
-                    .font(.system(size: 12, weight: .medium))
-                    .foregroundStyle(CMTheme.textSecondary(scheme))
+                    .font(.system(size: 11.5, weight: .medium))
+                    .foregroundStyle(IDETheme.textSecondary)
             }
         }
     }
 
     private var searchField: some View {
         HStack(spacing: 8) {
-            Image(systemName: "magnifyingglass").foregroundStyle(CMTheme.textSecondary(scheme))
+            Image(systemName: "magnifyingglass").font(.system(size: 11)).foregroundStyle(IDETheme.textSecondary)
             TextField("Search problems", text: $searchText)
                 .textFieldStyle(.plain)
+                .font(.system(size: 12))
         }
-        .neumorphicInset(radius: CMTheme.smallCornerRadius, padding: 10)
+        .padding(.horizontal, 10)
+        .padding(.vertical, 7)
+        .background(RoundedRectangle(cornerRadius: 5).fill(IDETheme.inputBackground))
+        .overlay(RoundedRectangle(cornerRadius: 5).stroke(IDETheme.border, lineWidth: 1))
     }
 }
 
 private struct EmptyWorkspacePlaceholder: View {
-    @Environment(\.colorScheme) private var scheme
     var body: some View {
         VStack(spacing: 12) {
             Image(systemName: "curlybraces.square")
                 .font(.system(size: 44))
-                .foregroundStyle(CMTheme.accent)
+                .foregroundStyle(IDETheme.accent)
             Text("Pick a problem to get started")
                 .font(.system(size: 16, weight: .semibold, design: .rounded))
-                .foregroundStyle(CMTheme.textPrimary(scheme))
+                .foregroundStyle(IDETheme.textPrimary)
             Text("Filter by company or topic on the left, then open a problem.\nThe assistant will help you pick an approach and write it up.")
                 .multilineTextAlignment(.center)
                 .font(.system(size: 12))
-                .foregroundStyle(CMTheme.textSecondary(scheme))
+                .foregroundStyle(IDETheme.textSecondary)
         }
         .padding(40)
-        .neumorphicRaised()
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(IDETheme.background)
     }
 }

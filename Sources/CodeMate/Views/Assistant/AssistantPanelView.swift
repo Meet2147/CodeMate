@@ -1,7 +1,6 @@
 import SwiftUI
 
 struct AssistantPanelView: View {
-    @Environment(\.colorScheme) private var scheme
     let context: AssistantContext
 
     @State private var messages: [AssistantMessage] = []
@@ -32,7 +31,7 @@ struct AssistantPanelView: View {
     var body: some View {
         VStack(spacing: 0) {
             header
-            Divider()
+            Rectangle().fill(IDETheme.border).frame(height: 1)
             ScrollViewReader { proxy in
                 ScrollView {
                     LazyVStack(alignment: .leading, spacing: 10) {
@@ -46,7 +45,7 @@ struct AssistantPanelView: View {
                         if isThinking {
                             HStack(spacing: 6) {
                                 ProgressView().controlSize(.small)
-                                Text("Thinking…").font(.system(size: 11)).foregroundStyle(CMTheme.textSecondary(scheme))
+                                Text("Thinking…").font(.system(size: 11)).foregroundStyle(IDETheme.textSecondary)
                             }
                         }
                         if let errorText {
@@ -54,7 +53,8 @@ struct AssistantPanelView: View {
                                 .font(.system(size: 11))
                                 .foregroundStyle(CMTheme.danger)
                                 .padding(8)
-                                .neumorphicInset(padding: 8)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                                .background(RoundedRectangle(cornerRadius: 5).fill(IDETheme.inputBackground))
                         }
                     }
                     .padding(14)
@@ -66,7 +66,7 @@ struct AssistantPanelView: View {
             quickActionChips
             inputBar
         }
-        .background(CMTheme.base(scheme))
+        .background(IDETheme.sidebarBackground)
         .onAppear {
             hasAPIKey = KeychainService.loadAPIKey()?.isEmpty == false
             onDeviceAvailability = OnDeviceAvailability.current
@@ -75,8 +75,8 @@ struct AssistantPanelView: View {
 
     private var header: some View {
         HStack(spacing: 8) {
-            Image(systemName: "sparkles").foregroundStyle(CMTheme.accent)
-            Text("Assistant").font(.system(size: 13, weight: .bold, design: .rounded)).foregroundStyle(CMTheme.textPrimary(scheme))
+            Image(systemName: "sparkles").foregroundStyle(IDETheme.accent)
+            Text("Assistant").font(.system(size: 12.5, weight: .bold, design: .rounded)).foregroundStyle(IDETheme.textPrimary)
             Spacer()
             Circle().fill(statusColor).frame(width: 6, height: 6)
             Text(statusLabel)
@@ -97,7 +97,7 @@ struct AssistantPanelView: View {
     private var statusColor: Color {
         switch activeSource {
         case .onDevice, .cloud: return CMTheme.success
-        case .offline: return CMTheme.textSecondary(scheme).opacity(0.6)
+        case .offline: return IDETheme.textSecondary
         }
     }
 
@@ -105,13 +105,13 @@ struct AssistantPanelView: View {
         VStack(alignment: .leading, spacing: 6) {
             Text("I'm here so you never get stuck.")
                 .font(.system(size: 12, weight: .semibold))
-                .foregroundStyle(CMTheme.textPrimary(scheme))
+                .foregroundStyle(IDETheme.textPrimary)
             Text(welcomeBody)
                 .font(.system(size: 11))
-                .foregroundStyle(CMTheme.textSecondary(scheme))
+                .foregroundStyle(IDETheme.textSecondary)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
-        .neumorphicRaised(padding: 12)
+        .ideCard(padding: 12)
     }
 
     private var welcomeBody: String {
@@ -135,7 +135,7 @@ struct AssistantPanelView: View {
                         Label(action.rawValue, systemImage: action.symbol)
                             .font(.system(size: 10.5, weight: .medium))
                     }
-                    .buttonStyle(NeumorphicButtonStyle())
+                    .buttonStyle(IDEButtonStyle())
                 }
             }
             .padding(.horizontal, 14)
@@ -147,6 +147,7 @@ struct AssistantPanelView: View {
         HStack(spacing: 8) {
             TextField("Ask the assistant…", text: $draft, axis: .vertical)
                 .textFieldStyle(.plain)
+                .foregroundStyle(IDETheme.textPrimary)
                 .lineLimit(1...4)
                 .onSubmit { send(draft) }
             Button {
@@ -155,10 +156,12 @@ struct AssistantPanelView: View {
                 Image(systemName: "arrow.up.circle.fill").font(.system(size: 22))
             }
             .buttonStyle(.plain)
-            .foregroundStyle(draft.trimmingCharacters(in: .whitespaces).isEmpty ? CMTheme.textSecondary(scheme) : CMTheme.accent)
+            .foregroundStyle(draft.trimmingCharacters(in: .whitespaces).isEmpty ? IDETheme.textSecondary : IDETheme.accent)
             .disabled(draft.trimmingCharacters(in: .whitespaces).isEmpty || isThinking)
         }
-        .neumorphicInset(padding: 10)
+        .padding(10)
+        .background(RoundedRectangle(cornerRadius: IDETheme.cornerRadius).fill(IDETheme.inputBackground))
+        .overlay(RoundedRectangle(cornerRadius: IDETheme.cornerRadius).stroke(IDETheme.border, lineWidth: 1))
         .padding(14)
     }
 
@@ -189,7 +192,6 @@ struct AssistantPanelView: View {
 }
 
 private struct MessageBubble: View {
-    @Environment(\.colorScheme) private var scheme
     let message: AssistantMessage
 
     var body: some View {
@@ -197,13 +199,15 @@ private struct MessageBubble: View {
             if message.role == .user { Spacer(minLength: 30) }
             Text(.init(message.text))
                 .font(.system(size: 12))
-                .foregroundStyle(message.role == .user ? .white : CMTheme.textPrimary(scheme))
+                .foregroundStyle(message.role == .user ? .white : IDETheme.textPrimary)
                 .padding(10)
                 .background(
-                    RoundedRectangle(cornerRadius: 12, style: .continuous)
-                        .fill(message.role == .user ? AnyShapeStyle(CMTheme.accent.gradient) : AnyShapeStyle(CMTheme.base(scheme)))
-                        .shadow(color: CMTheme.shadowDark(scheme), radius: 4, x: 3, y: 3)
-                        .shadow(color: CMTheme.shadowLight(scheme), radius: 4, x: -3, y: -3)
+                    RoundedRectangle(cornerRadius: 8, style: .continuous)
+                        .fill(message.role == .user ? AnyShapeStyle(IDETheme.accent) : AnyShapeStyle(IDETheme.elevatedBackground))
+                )
+                .overlay(
+                    RoundedRectangle(cornerRadius: 8, style: .continuous)
+                        .stroke(message.role == .user ? .clear : IDETheme.border, lineWidth: 1)
                 )
                 .textSelection(.enabled)
             if message.role == .assistant { Spacer(minLength: 30) }

@@ -3,7 +3,6 @@ import SwiftUI
 /// Lets the student compare candidate approaches (brute force -> optimal)
 /// before writing code -- the app's answer to "help me pick an approach".
 struct ApproachSelectorView: View {
-    @Environment(\.colorScheme) private var scheme
     let problem: Problem
     @Binding var isExpanded: Bool
     @State private var selected: Approach?
@@ -15,10 +14,10 @@ struct ApproachSelectorView: View {
             } label: {
                 HStack {
                     Image(systemName: "arrow.triangle.branch").foregroundStyle(CMTheme.accent)
-                    Text("Choose an approach").font(.system(size: 12, weight: .bold)).foregroundStyle(CMTheme.textPrimary(scheme))
+                    Text("Choose an approach").font(.system(size: 12, weight: .bold)).foregroundStyle(IDETheme.textPrimary)
                     Spacer()
                     Image(systemName: isExpanded ? "chevron.up" : "chevron.down").font(.system(size: 10))
-                        .foregroundStyle(CMTheme.textSecondary(scheme))
+                        .foregroundStyle(IDETheme.textSecondary)
                 }
             }
             .buttonStyle(.plain)
@@ -30,31 +29,31 @@ struct ApproachSelectorView: View {
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
-        .neumorphicRaised(padding: 14)
+        .ideCard()
     }
 
     private func approachCard(_ approach: Approach) -> some View {
         let isSelected = selected == approach
         return VStack(alignment: .leading, spacing: 6) {
             HStack {
-                Text(approach.name).font(.system(size: 12, weight: .bold)).foregroundStyle(CMTheme.textPrimary(scheme))
+                Text(approach.name).font(.system(size: 12, weight: .bold)).foregroundStyle(IDETheme.textPrimary)
                 Spacer()
                 Text(approach.timeComplexity)
                     .font(.system(size: 10, weight: .semibold, design: .monospaced))
                     .foregroundStyle(CMTheme.accent)
                 Text(approach.spaceComplexity)
                     .font(.system(size: 10, weight: .semibold, design: .monospaced))
-                    .foregroundStyle(CMTheme.textSecondary(scheme))
+                    .foregroundStyle(IDETheme.textSecondary)
             }
-            Text(approach.summary).font(.system(size: 11)).foregroundStyle(CMTheme.textSecondary(scheme))
+            Text(approach.summary).font(.system(size: 11)).foregroundStyle(IDETheme.textSecondary)
 
             if isSelected {
                 VStack(alignment: .leading, spacing: 4) {
                     Text("When to use: \(approach.whenToUse)")
                         .font(.system(size: 11, weight: .medium))
-                        .foregroundStyle(CMTheme.textPrimary(scheme))
+                        .foregroundStyle(IDETheme.textPrimary)
                     ForEach(Array(approach.steps.enumerated()), id: \.offset) { index, step in
-                        Text("\(index + 1). \(step)").font(.system(size: 11)).foregroundStyle(CMTheme.textPrimary(scheme))
+                        Text("\(index + 1). \(step)").font(.system(size: 11)).foregroundStyle(IDETheme.textPrimary)
                     }
                 }
                 .padding(.top, 2)
@@ -77,7 +76,6 @@ struct ApproachSelectorView: View {
 /// Progressive hint ladder: reveals one hint at a time so the student is
 /// nudged rather than handed the answer immediately.
 struct HintLadderView: View {
-    @Environment(\.colorScheme) private var scheme
     let problem: Problem
     @Binding var hintsRevealed: Int
 
@@ -85,19 +83,20 @@ struct HintLadderView: View {
         VStack(alignment: .leading, spacing: 10) {
             HStack {
                 Image(systemName: "lightbulb").foregroundStyle(CMTheme.warning)
-                Text("Hints").font(.system(size: 12, weight: .bold)).foregroundStyle(CMTheme.textPrimary(scheme))
+                Text("Hints").font(.system(size: 12, weight: .bold)).foregroundStyle(IDETheme.textPrimary)
                 Spacer()
                 Text("\(hintsRevealed)/\(problem.hints.count)")
                     .font(.system(size: 10, weight: .semibold))
-                    .foregroundStyle(CMTheme.textSecondary(scheme))
+                    .foregroundStyle(IDETheme.textSecondary)
             }
 
             ForEach(Array(problem.hints.prefix(hintsRevealed).enumerated()), id: \.offset) { index, hint in
                 Text("\(index + 1). \(hint)")
                     .font(.system(size: 11.5))
-                    .foregroundStyle(CMTheme.textPrimary(scheme))
+                    .foregroundStyle(IDETheme.textPrimary)
                     .frame(maxWidth: .infinity, alignment: .leading)
-                    .neumorphicInset(padding: 8)
+                    .padding(8)
+                    .background(RoundedRectangle(cornerRadius: 5).fill(IDETheme.inputBackground))
             }
 
             if hintsRevealed < problem.hints.count {
@@ -107,9 +106,9 @@ struct HintLadderView: View {
                     Text(hintsRevealed == 0 ? "Reveal first hint" : "Reveal next hint")
                         .frame(maxWidth: .infinity)
                 }
-                .buttonStyle(NeumorphicButtonStyle())
+                .buttonStyle(IDEButtonStyle())
             }
         }
-        .neumorphicRaised(padding: 14)
+        .ideCard()
     }
 }

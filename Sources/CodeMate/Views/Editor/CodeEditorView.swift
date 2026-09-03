@@ -6,7 +6,6 @@ import AppKit
 /// engine -- kept intentionally simple and dependency-free for the MVP.
 struct CodeEditorView: NSViewRepresentable {
     @Binding var text: String
-    @Environment(\.colorScheme) private var scheme
 
     func makeNSView(context: Context) -> NSScrollView {
         let textView = NSTextView()
@@ -24,12 +23,24 @@ struct CodeEditorView: NSViewRepresentable {
         textView.isAutomaticTextReplacementEnabled = false
         textView.isAutomaticSpellingCorrectionEnabled = false
 
+        // The editor is always-dark IDE chrome regardless of system
+        // appearance, so force dark aqua + explicit fixed colors rather
+        // than the dynamic NSColor.textColor/.secondaryLabelColor, which
+        // track the real system setting and would otherwise mismatch the
+        // forced-dark SwiftUI environment around it.
+        textView.appearance = NSAppearance(named: .darkAqua)
+        textView.drawsBackground = true
+        textView.backgroundColor = NSColor(IDETheme.inputBackground)
+        textView.textColor = NSColor(IDETheme.textPrimary)
+        textView.insertionPointColor = NSColor(IDETheme.accent)
+
         let scrollView = NSScrollView()
         scrollView.documentView = textView
         scrollView.hasVerticalScroller = true
         scrollView.hasHorizontalScroller = false
-        scrollView.drawsBackground = false
-        textView.drawsBackground = false
+        scrollView.appearance = NSAppearance(named: .darkAqua)
+        scrollView.drawsBackground = true
+        scrollView.backgroundColor = NSColor(IDETheme.inputBackground)
 
         let ruler = LineNumberRulerView(textView: textView)
         scrollView.verticalRulerView = ruler
@@ -83,6 +94,9 @@ final class LineNumberRulerView: NSRulerView {
     @objc private func contentDidChange() { needsDisplay = true }
 
     override func drawHashMarksAndLabels(in rect: NSRect) {
+        NSColor(IDETheme.inputBackground).setFill()
+        rect.fill()
+
         guard let textView = textView, let layoutManager = textView.layoutManager,
               let textContainer = textView.textContainer else { return }
 
@@ -96,7 +110,7 @@ final class LineNumberRulerView: NSRulerView {
 
         let attrs: [NSAttributedString.Key: Any] = [
             .font: NSFont.monospacedSystemFont(ofSize: 10.5, weight: .regular),
-            .foregroundColor: NSColor.secondaryLabelColor
+            .foregroundColor: NSColor(IDETheme.textTertiary)
         ]
 
         while index < NSMaxRange(charRange) {
