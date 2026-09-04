@@ -7,6 +7,21 @@ import AppKit
 struct CodeEditorView: NSViewRepresentable {
     @Binding var text: String
 
+    /// Explicit font + foreground color for every character. Plain
+    /// `textView.string = ...` / `.textColor` alone turned out NOT to
+    /// reliably survive replacing the whole string -- confirmed by testing:
+    /// the ruler (which reads the layout manager directly) showed the
+    /// right line count for real, non-empty saved text, but the glyphs
+    /// themselves painted invisible. Setting attributes explicitly on the
+    /// text storage, every time, removes any ambiguity about where the
+    /// color comes from.
+    private static func attributes() -> [NSAttributedString.Key: Any] {
+        [
+            .font: NSFont.monospacedSystemFont(ofSize: 13, weight: .regular),
+            .foregroundColor: NSColor(IDETheme.textPrimary)
+        ]
+    }
+
     func makeNSView(context: Context) -> NSScrollView {
         let scrollView = NSScrollView()
         let contentSize = scrollView.contentSize
@@ -19,7 +34,8 @@ struct CodeEditorView: NSViewRepresentable {
         textView.font = .monospacedSystemFont(ofSize: 13, weight: .regular)
         textView.textContainerInset = NSSize(width: 10, height: 10)
         textView.delegate = context.coordinator
-        textView.string = text
+        textView.textStorage?.setAttributedString(NSAttributedString(string: text, attributes: Self.attributes()))
+        textView.typingAttributes = Self.attributes()
         textView.isAutomaticQuoteSubstitutionEnabled = false
         textView.isAutomaticDashSubstitutionEnabled = false
         textView.isAutomaticTextReplacementEnabled = false
@@ -75,7 +91,8 @@ struct CodeEditorView: NSViewRepresentable {
         guard let textView = nsView.documentView as? NSTextView else { return }
         if textView.string != text {
             let selectedRanges = textView.selectedRanges
-            textView.string = text
+            textView.textStorage?.setAttributedString(NSAttributedString(string: text, attributes: Self.attributes()))
+            textView.typingAttributes = Self.attributes()
             textView.selectedRanges = selectedRanges
         }
         (nsView.verticalRulerView as? LineNumberRulerView)?.needsDisplay = true
