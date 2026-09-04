@@ -2465,6 +2465,874 @@ enum ProblemBank {
                 .python: "def min_window(s: str, t: str) -> str:\n    # Write your solution here\n    return \"\"\n"
             ],
             followUp: nil
+        ),
+
+        Problem(
+            id: "two-sum-ii-sorted",
+            title: "Two Sum II - Input Array Is Sorted",
+            difficulty: .easy,
+            topics: [.twoPointers],
+            companies: [.google, .amazon],
+            prompt: "Given a 1-indexed array of integers already sorted in ascending order, find two numbers that add up to a target and return their indices (1-indexed).",
+            constraints: ["2 ≤ numbers.count ≤ 3 × 10^4"],
+            examples: [
+                Example(input: "numbers = [2,7,11,15], target = 9", output: "[1,2]", explanation: nil)
+            ],
+            hints: [
+                "You could hash-map this like the original Two Sum, but the array being SORTED is a strong hint toward something cheaper.",
+                "Two pointers from both ends: if the sum is too big, move the right pointer in; if too small, move the left pointer up."
+            ],
+            approaches: [
+                Approach(name: "Two pointers", summary: "Start at both ends; move inward based on how the current sum compares to target.",
+                         timeComplexity: "O(n)", spaceComplexity: "O(1)",
+                         whenToUse: "The intended, optimal solution given the sorted input.",
+                         steps: ["left = 0, right = n-1", "While left < right: sum = numbers[left] + numbers[right]",
+                                  "If sum == target, return [left+1, right+1]", "If sum < target, left += 1, else right -= 1"])
+            ],
+            starterCode: [
+                .swift: "func twoSum(_ numbers: [Int], _ target: Int) -> [Int] {\n    // Write your solution here\n    return []\n}\n",
+                .python: "def two_sum(numbers: list[int], target: int) -> list[int]:\n    # Write your solution here\n    return []\n"
+            ],
+            followUp: nil
+        ),
+
+        Problem(
+            id: "remove-duplicates-sorted-array",
+            title: "Remove Duplicates from Sorted Array",
+            difficulty: .easy,
+            topics: [.twoPointers, .arrays],
+            companies: [.meta, .microsoft],
+            prompt: "Given a sorted array `nums`, remove the duplicates in place so each unique element appears only once, and return the new length. Do this with O(1) extra space.",
+            constraints: ["1 ≤ nums.count ≤ 3 × 10^4"],
+            examples: [
+                Example(input: "nums = [1,1,2]", output: "2, nums = [1,2,...]", explanation: nil)
+            ],
+            hints: [
+                "Since the array is sorted, duplicates are always adjacent -- you never need to look further than the last kept value.",
+                "Keep a 'write pointer' for the next unique slot; a 'read pointer' scans forward, only writing when it finds a new value."
+            ],
+            approaches: [
+                Approach(name: "Two-pointer in-place overwrite", summary: "Write each new unique value forward as you scan once.",
+                         timeComplexity: "O(n)", spaceComplexity: "O(1)",
+                         whenToUse: "The standard optimal solution.",
+                         steps: ["writeIndex = 1", "For i in 1..<n: if nums[i] != nums[writeIndex-1]: nums[writeIndex] = nums[i]; writeIndex += 1",
+                                  "Return writeIndex"])
+            ],
+            starterCode: [
+                .swift: "func removeDuplicates(_ nums: inout [Int]) -> Int {\n    // Write your solution here\n    return nums.count\n}\n",
+                .python: "def remove_duplicates(nums: list[int]) -> int:\n    # Write your solution here, modify nums in place\n    return len(nums)\n"
+            ],
+            followUp: nil
+        ),
+
+        Problem(
+            id: "first-bad-version",
+            title: "First Bad Version",
+            difficulty: .easy,
+            topics: [.binarySearch],
+            companies: [.google, .meta],
+            prompt: "You have `n` versions [1, 2, ..., n], and want to find the first bad one given an API `isBadVersion(version)`. Once a version is bad, all following versions are also bad. Minimize API calls.",
+            constraints: ["1 ≤ n ≤ 2^31 - 1"],
+            examples: [
+                Example(input: "n = 5, first bad = 4", output: "4", explanation: nil)
+            ],
+            hints: [
+                "The versions form a sorted boolean sequence (good...good, bad...bad) -- exactly the shape binary search is built for.",
+                "At each guess, call isBadVersion(mid); if bad, the answer is at or before mid, otherwise it's after mid."
+            ],
+            approaches: [
+                Approach(name: "Binary search on the boundary", summary: "Standard binary search narrowing toward the first 'bad' version.",
+                         timeComplexity: "O(log n)", spaceComplexity: "O(1)",
+                         whenToUse: "The intended, optimal solution.",
+                         steps: ["left = 1, right = n", "While left < right: mid = left + (right-left)/2",
+                                  "If isBadVersion(mid): right = mid, else: left = mid + 1", "Return left"])
+            ],
+            starterCode: [
+                .swift: "func firstBadVersion(_ n: Int) -> Int {\n    // Write your solution here (assume an isBadVersion(_:) API exists)\n    return 1\n}\n",
+                .python: "def first_bad_version(n: int) -> int:\n    # Write your solution here (assume an is_bad_version() API exists)\n    return 1\n"
+            ],
+            followUp: nil
+        ),
+
+        Problem(
+            id: "sqrt-x",
+            title: "Sqrt(x)",
+            difficulty: .easy,
+            topics: [.binarySearch, .math],
+            companies: [.linkedin, .amazon],
+            prompt: "Given a non-negative integer `x`, return the integer square root of x truncated toward zero, without using a built-in power/sqrt function.",
+            constraints: ["0 ≤ x ≤ 2^31 - 1"],
+            examples: [
+                Example(input: "x = 8", output: "2", explanation: "sqrt(8) ≈ 2.83, truncated to 2.")
+            ],
+            hints: [
+                "You're searching for the largest integer whose square is ≤ x -- the search space [0, x] is sorted by that property.",
+                "Binary search on the candidate answer, checking mid*mid against x (watch for overflow with large x in other languages)."
+            ],
+            approaches: [
+                Approach(name: "Binary search on the answer", summary: "Search the range [0, x] for the largest value whose square doesn't exceed x.",
+                         timeComplexity: "O(log x)", spaceComplexity: "O(1)",
+                         whenToUse: "The standard optimal approach without library functions.",
+                         steps: ["left = 0, right = x", "While left ≤ right: mid = (left+right)/2",
+                                  "If mid*mid ≤ x: best = mid; left = mid + 1", "Else: right = mid - 1", "Return best"])
+            ],
+            starterCode: [
+                .swift: "func mySqrt(_ x: Int) -> Int {\n    // Write your solution here\n    return 0\n}\n",
+                .python: "def my_sqrt(x: int) -> int:\n    # Write your solution here\n    return 0\n"
+            ],
+            followUp: nil
+        ),
+
+        Problem(
+            id: "implement-queue-using-stacks",
+            title: "Implement Queue using Stacks",
+            difficulty: .easy,
+            topics: [.stack],
+            companies: [.amazon, .microsoft],
+            prompt: "Implement a first-in-first-out (FIFO) queue using only two stacks, supporting push, pop, peek, and empty.",
+            constraints: ["up to 100 total calls"],
+            examples: [
+                Example(input: "push(1); push(2); peek() -> 1; pop() -> 1; empty() -> false", output: "see explanation", explanation: nil)
+            ],
+            hints: [
+                "A single stack reverses order (LIFO); to get FIFO order back, you need to reverse it a second time.",
+                "Use an 'in' stack for pushes. When you need to pop/peek and the 'out' stack is empty, dump everything from 'in' into 'out' -- that reverses it back to FIFO order."
+            ],
+            approaches: [
+                Approach(name: "Two stacks, lazy transfer", summary: "Push onto 'in'; transfer to 'out' only when 'out' is empty and you need to read the front.",
+                         timeComplexity: "O(1) amortized per operation", spaceComplexity: "O(n)",
+                         whenToUse: "The standard, optimal approach.",
+                         steps: ["push(x): inStack.push(x)",
+                                  "pop()/peek(): if outStack is empty, move everything from inStack to outStack",
+                                  "Then pop/peek from outStack"])
+            ],
+            starterCode: [
+                .swift: "final class MyQueue {\n    init() {\n        // Write your solution here\n    }\n    func push(_ x: Int) {\n    }\n    func pop() -> Int {\n        return 0\n    }\n    func peek() -> Int {\n        return 0\n    }\n    func empty() -> Bool {\n        return true\n    }\n}\n",
+                .python: "class MyQueue:\n    def __init__(self):\n        pass\n    def push(self, x: int) -> None:\n        pass\n    def pop(self) -> int:\n        return 0\n    def peek(self) -> int:\n        return 0\n    def empty(self) -> bool:\n        return True\n"
+            ],
+            followUp: nil
+        ),
+
+        Problem(
+            id: "house-robber",
+            title: "House Robber",
+            difficulty: .easy,
+            topics: [.dynamicProgramming],
+            companies: [.amazon, .microsoft],
+            prompt: "Given an array representing money in houses along a street, find the maximum amount you can rob without robbing two directly adjacent houses.",
+            constraints: ["1 ≤ nums.count ≤ 100"],
+            examples: [
+                Example(input: "nums = [1,2,3,1]", output: "4", explanation: "Rob house 1 (1) and house 3 (3) -> 4. Or house 2 and 4 -> 3. Best is 4 by robbing houses 1 and 3? Actually best is houses 2 and 4: 2+1=3, or 1+3=4 (indices 0 and 2).")
+            ],
+            hints: [
+                "At each house, you have two choices: skip it (carry forward the best so far) or rob it (best-so-far from two houses back, plus this house's money).",
+                "Track just two running values -- the best total ending at the previous house, and the one before that -- rather than a full array."
+            ],
+            approaches: [
+                Approach(name: "DP with two rolling variables", summary: "At each house, take the max of skipping it or robbing it plus the best from two houses back.",
+                         timeComplexity: "O(n)", spaceComplexity: "O(1)",
+                         whenToUse: "The standard, optimal solution.",
+                         steps: ["prev2 = 0, prev1 = 0", "For each money in nums: current = max(prev1, prev2 + money)",
+                                  "prev2 = prev1; prev1 = current", "Return prev1"])
+            ],
+            starterCode: [
+                .swift: "func rob(_ nums: [Int]) -> Int {\n    // Write your solution here\n    return 0\n}\n",
+                .python: "def rob(nums: list[int]) -> int:\n    # Write your solution here\n    return 0\n"
+            ],
+            followUp: "What if the houses are arranged in a circle (first and last are adjacent)?"
+        ),
+
+        Problem(
+            id: "kth-smallest-in-bst",
+            title: "Kth Smallest Element in a BST",
+            difficulty: .medium,
+            topics: [.trees, .binarySearch],
+            companies: [.google, .amazon],
+            prompt: "Given the root of a binary search tree and an integer k, return the kth smallest value in the tree (1-indexed).",
+            constraints: ["1 ≤ number of nodes ≤ 10^4"],
+            examples: [
+                Example(input: "root = [3,1,4,null,2], k = 1", output: "1", explanation: nil)
+            ],
+            hints: [
+                "A BST's in-order traversal visits nodes in sorted order -- that's exactly the ordering you need.",
+                "You don't need to collect the entire sorted list; stop as soon as you've visited the kth node."
+            ],
+            approaches: [
+                Approach(name: "In-order traversal with an early stop", summary: "Traverse in-order (left, node, right), counting nodes visited; stop at the kth.",
+                         timeComplexity: "O(h + k)", spaceComplexity: "O(h) recursion stack",
+                         whenToUse: "The standard, optimal approach -- can be done iteratively with an explicit stack to avoid full recursion.",
+                         steps: ["Iterative in-order traversal using a stack", "Each time you pop/visit a node, decrement a counter",
+                                  "When the counter hits 0, that node's value is the answer"])
+            ],
+            starterCode: [
+                .swift: "func kthSmallest(_ root: TreeNode?, _ k: Int) -> Int {\n    // Write your solution here\n    return 0\n}\n",
+                .python: "def kth_smallest(root, k: int) -> int:\n    # Write your solution here\n    return 0\n"
+            ],
+            followUp: "What if the BST is modified (insert/delete) frequently and you need kth-smallest repeatedly -- how would you optimize?"
+        ),
+
+        Problem(
+            id: "lowest-common-ancestor-bst",
+            title: "Lowest Common Ancestor of a BST",
+            difficulty: .medium,
+            topics: [.trees, .binarySearch],
+            companies: [.amazon, .microsoft, .linkedin],
+            prompt: "Given a binary search tree and two nodes p and q, find their lowest common ancestor (the deepest node that has both as descendants).",
+            constraints: ["2 ≤ number of nodes ≤ 10^5"],
+            examples: [
+                Example(input: "root = [6,2,8,0,4,7,9,null,null,3,5], p = 2, q = 8", output: "6", explanation: nil)
+            ],
+            hints: [
+                "This is a BST, not just any binary tree -- the values themselves tell you which direction to go, no need to search both subtrees.",
+                "If both p and q are less than the current node, the LCA must be in the left subtree; if both are greater, it's in the right subtree; otherwise, the current node IS the LCA (it's the split point)."
+            ],
+            approaches: [
+                Approach(name: "BST property walk", summary: "Walk down from the root, following BST ordering, until you reach the split point.",
+                         timeComplexity: "O(h)", spaceComplexity: "O(1) iterative",
+                         whenToUse: "The optimal approach, exploiting BST structure -- much faster than a general tree LCA.",
+                         steps: ["node = root", "While true: if p.val and q.val both < node.val: node = node.left",
+                                  "Else if both > node.val: node = node.right", "Else: return node"])
+            ],
+            starterCode: [
+                .swift: "func lowestCommonAncestor(_ root: TreeNode?, _ p: TreeNode?, _ q: TreeNode?) -> TreeNode? {\n    // Write your solution here\n    return nil\n}\n",
+                .python: "def lowest_common_ancestor(root, p, q):\n    # Write your solution here\n    return None\n"
+            ],
+            followUp: nil
+        ),
+
+        Problem(
+            id: "lowest-common-ancestor-binary-tree",
+            title: "Lowest Common Ancestor of a Binary Tree",
+            difficulty: .medium,
+            topics: [.trees],
+            companies: [.meta, .amazon],
+            prompt: "Given a (not-necessarily-sorted) binary tree and two nodes p and q, find their lowest common ancestor.",
+            constraints: ["2 ≤ number of nodes ≤ 10^5"],
+            examples: [
+                Example(input: "root = [3,5,1,6,2,0,8,null,null,7,4], p = 5, q = 1", output: "3", explanation: nil)
+            ],
+            hints: [
+                "Without BST ordering to guide you, you generally need to search both subtrees at every node.",
+                "Recursively ask each subtree 'is p or q found here?'. If both left and right report finding one, the current node is the LCA; otherwise propagate whichever side found something."
+            ],
+            approaches: [
+                Approach(name: "Recursive search both subtrees", summary: "At each node, recurse into both children; if both return non-nil, this node is the LCA.",
+                         timeComplexity: "O(n)", spaceComplexity: "O(h) recursion stack",
+                         whenToUse: "The standard, optimal solution for a general binary tree.",
+                         steps: ["If node is nil or node == p or node == q: return node",
+                                  "left = search(node.left, p, q); right = search(node.right, p, q)",
+                                  "If both left and right are non-nil: return node (this is the LCA)",
+                                  "Otherwise return whichever of left/right is non-nil"])
+            ],
+            starterCode: [
+                .swift: "func lowestCommonAncestor(_ root: TreeNode?, _ p: TreeNode?, _ q: TreeNode?) -> TreeNode? {\n    // Write your solution here\n    return nil\n}\n",
+                .python: "def lowest_common_ancestor(root, p, q):\n    # Write your solution here\n    return None\n"
+            ],
+            followUp: nil
+        ),
+
+        Problem(
+            id: "binary-tree-right-side-view",
+            title: "Binary Tree Right Side View",
+            difficulty: .medium,
+            topics: [.trees, .graphs],
+            companies: [.amazon, .meta],
+            prompt: "Given the root of a binary tree, return the values visible when looking at the tree from the right side, top to bottom (one value per level).",
+            constraints: ["0 ≤ number of nodes ≤ 100"],
+            examples: [
+                Example(input: "root = [1,2,3,null,5,null,4]", output: "[1,3,4]", explanation: nil)
+            ],
+            hints: [
+                "'What you see from the right' at each level is just the LAST node visited at that level during a level-order (BFS) traversal.",
+                "BFS level by level, and take the last node's value from each level's queue snapshot."
+            ],
+            approaches: [
+                Approach(name: "Level-order BFS, keep the last per level", summary: "BFS level by level; record the last node's value in each level.",
+                         timeComplexity: "O(n)", spaceComplexity: "O(n)",
+                         whenToUse: "The standard, intuitive solution.",
+                         steps: ["queue = [root]", "While queue not empty: levelSize = queue.count",
+                                  "For i in 0..<levelSize: pop front; if i == levelSize-1, record its value; enqueue its children"])
+            ],
+            starterCode: [
+                .swift: "func rightSideView(_ root: TreeNode?) -> [Int] {\n    // Write your solution here\n    return []\n}\n",
+                .python: "def right_side_view(root) -> list[int]:\n    # Write your solution here\n    return []\n"
+            ],
+            followUp: nil
+        ),
+
+        Problem(
+            id: "add-two-numbers",
+            title: "Add Two Numbers",
+            difficulty: .medium,
+            topics: [.linkedList, .math],
+            companies: [.amazon, .microsoft, .apple],
+            prompt: "You're given two non-empty linked lists representing two non-negative integers, digits stored in reverse order, one digit per node. Add the two numbers and return the sum as a linked list in the same format.",
+            constraints: ["1 ≤ number of nodes in each list ≤ 100"],
+            examples: [
+                Example(input: "l1 = 2->4->3, l2 = 5->6->4", output: "7->0->8", explanation: "342 + 465 = 807")
+            ],
+            hints: [
+                "This is just elementary-school column addition, one linked-list node at a time instead of one digit at a time.",
+                "Track a running carry; at each position, sum = digit1 + digit2 + carry, the new node's value is sum % 10, and the new carry is sum / 10.",
+                "Don't forget a final carry-out node if the numbers' lengths differ or the last addition still carries."
+            ],
+            approaches: [
+                Approach(name: "Simulated column addition", summary: "Walk both lists together, tracking a carry, building the result list as you go.",
+                         timeComplexity: "O(max(m, n))", spaceComplexity: "O(max(m, n)) for the output",
+                         whenToUse: "The standard, expected solution.",
+                         steps: ["dummy = ListNode(); tail = dummy; carry = 0",
+                                  "While l1 or l2 or carry: sum = (l1?.val ?? 0) + (l2?.val ?? 0) + carry",
+                                  "carry = sum / 10; tail.next = ListNode(sum % 10); tail = tail.next; advance l1/l2 if present",
+                                  "Return dummy.next"])
+            ],
+            starterCode: [
+                .swift: "func addTwoNumbers(_ l1: ListNode?, _ l2: ListNode?) -> ListNode? {\n    // Write your solution here\n    return nil\n}\n",
+                .python: "def add_two_numbers(l1, l2):\n    # Write your solution here\n    return None\n"
+            ],
+            followUp: "What if the digits were stored in forward (non-reversed) order instead?"
+        ),
+
+        Problem(
+            id: "remove-nth-node-from-end",
+            title: "Remove Nth Node From End of List",
+            difficulty: .medium,
+            topics: [.linkedList, .twoPointers],
+            companies: [.amazon, .google],
+            prompt: "Given the head of a linked list, remove the nth node from the end and return the head, in one pass.",
+            constraints: ["1 ≤ number of nodes ≤ 30"],
+            examples: [
+                Example(input: "head = [1,2,3,4,5], n = 2", output: "[1,2,3,5]", explanation: nil)
+            ],
+            hints: [
+                "Without knowing the list's length ahead of time, 'nth from the end' is awkward -- unless two pointers stay a fixed n apart.",
+                "Advance a 'fast' pointer n steps ahead first, then move both fast and 'slow' together; when fast reaches the end, slow is right before the node to remove.",
+                "A dummy head node before the real head avoids a special case when the node to remove is the head itself."
+            ],
+            approaches: [
+                Approach(name: "Two pointers, n apart", summary: "Advance fast n steps ahead, then move both together until fast falls off the end.",
+                         timeComplexity: "O(n)", spaceComplexity: "O(1)",
+                         whenToUse: "The standard one-pass optimal solution.",
+                         steps: ["dummy = ListNode(next: head); slow = dummy; fast = dummy",
+                                  "Advance fast n+1 times", "While fast is non-nil: advance both slow and fast",
+                                  "slow.next = slow.next.next", "Return dummy.next"])
+            ],
+            starterCode: [
+                .swift: "func removeNthFromEnd(_ head: ListNode?, _ n: Int) -> ListNode? {\n    // Write your solution here\n    return head\n}\n",
+                .python: "def remove_nth_from_end(head, n: int):\n    # Write your solution here\n    return head\n"
+            ],
+            followUp: nil
+        ),
+
+        Problem(
+            id: "copy-list-with-random-pointer",
+            title: "Copy List with Random Pointer",
+            difficulty: .medium,
+            topics: [.linkedList],
+            companies: [.amazon, .meta, .microsoft],
+            prompt: "You're given a linked list where each node has a `next` pointer and a `random` pointer that can point to any node in the list (or nil). Return a complete deep copy of the list.",
+            constraints: ["0 ≤ number of nodes ≤ 1000"],
+            examples: [
+                Example(input: "list with next + random pointers", output: "a structurally identical, fully independent deep copy", explanation: nil)
+            ],
+            hints: [
+                "The tricky part is the random pointers -- when you clone a node, the node its random pointer targets might not be cloned yet.",
+                "A hash map from original node -> cloned node lets you look up (or lazily create) the correct clone for any random target, in two passes.",
+                "There's also a clever O(1)-space trick: interleave each clone directly after its original in the list, use that to wire up random pointers, then unweave the two lists."
+            ],
+            approaches: [
+                Approach(name: "Hash map original -> clone", summary: "First pass clones nodes and builds a lookup map; second pass wires up next/random using the map.",
+                         timeComplexity: "O(n)", spaceComplexity: "O(n)",
+                         whenToUse: "The simplest, most commonly given optimal-time solution.",
+                         steps: ["First pass: create a clone for each node, map[original] = clone",
+                                  "Second pass: clone.next = map[original.next], clone.random = map[original.random]",
+                                  "Return map[head]"]),
+                Approach(name: "Interleaved nodes, O(1) extra space", summary: "Weave each clone right after its original, use that adjacency to set random pointers, then unweave.",
+                         timeComplexity: "O(n)", spaceComplexity: "O(1) extra (excluding output)",
+                         whenToUse: "A strong follow-up if asked to avoid the hash map.",
+                         steps: ["Insert clone_i right after original_i for every node",
+                                  "For each original: original.next.random = original.random?.next",
+                                  "Unweave: separate the interleaved list back into original and cloned lists"])
+            ],
+            starterCode: [
+                .swift: "// class Node { var val: Int; var next: Node?; var random: Node?; init(_ v: Int) { val = v } }\nfunc copyRandomList(_ head: Node?) -> Node? {\n    // Write your solution here\n    return nil\n}\n",
+                .python: "def copy_random_list(head):\n    # Write your solution here\n    return None\n"
+            ],
+            followUp: nil
+        ),
+
+        Problem(
+            id: "find-all-anagrams-in-string",
+            title: "Find All Anagrams in a String",
+            difficulty: .medium,
+            topics: [.slidingWindow],
+            companies: [.amazon, .meta],
+            prompt: "Given strings `s` and `p`, return the starting indices of all anagrams of `p` within `s`.",
+            constraints: ["1 ≤ s.length, p.length ≤ 3 × 10^4"],
+            examples: [
+                Example(input: "s = \"cbaebabacd\", p = \"abc\"", output: "[0,6]", explanation: nil)
+            ],
+            hints: [
+                "Every anagram of p has the exact same character-count signature as p -- you're really looking for windows of s matching that signature.",
+                "A fixed-size sliding window of length p.length lets you maintain a running character count and compare it to p's count as the window slides, in O(1) per step rather than recomputing from scratch."
+            ],
+            approaches: [
+                Approach(name: "Fixed-size sliding window with character counts", summary: "Slide a window of length p.length across s, incrementally updating counts and comparing to p's signature.",
+                         timeComplexity: "O(s.length)", spaceComplexity: "O(1) (fixed alphabet)",
+                         whenToUse: "The standard, optimal approach.",
+                         steps: ["need = character counts of p", "window = character counts of s[0..<p.length]",
+                                  "If window == need: record index 0",
+                                  "Slide right by one: add new char, remove leftmost char, compare counts again"])
+            ],
+            starterCode: [
+                .swift: "func findAnagrams(_ s: String, _ p: String) -> [Int] {\n    // Write your solution here\n    return []\n}\n",
+                .python: "def find_anagrams(s: str, p: str) -> list[int]:\n    # Write your solution here\n    return []\n"
+            ],
+            followUp: nil
+        ),
+
+        Problem(
+            id: "longest-repeating-char-replacement",
+            title: "Longest Repeating Character Replacement",
+            difficulty: .medium,
+            topics: [.slidingWindow],
+            companies: [.google, .amazon],
+            prompt: "Given a string `s` and an integer `k`, you can replace up to k characters in the string. Return the length of the longest substring containing the same letter after such replacements.",
+            constraints: ["1 ≤ s.length ≤ 10^5", "0 ≤ k ≤ s.length"],
+            examples: [
+                Example(input: "s = \"ABAB\", k = 2", output: "4", explanation: "Replace both 'A's or both 'B's.")
+            ],
+            hints: [
+                "A window is 'achievable' if (window length - count of its most frequent character) ≤ k -- that's exactly how many characters you'd need to replace.",
+                "Expand the window each step; if it becomes invalid, shrink from the left. Track the maximum valid window size seen."
+            ],
+            approaches: [
+                Approach(name: "Sliding window with a max-frequency tracker", summary: "Grow the window; shrink from the left whenever (window - maxFreqCount) exceeds k.",
+                         timeComplexity: "O(n)", spaceComplexity: "O(1) (fixed alphabet)",
+                         whenToUse: "The standard, optimal solution.",
+                         steps: ["left = 0, maxFreq = 0, counts = {}", "For right in 0..<n: counts[s[right]] += 1",
+                                  "maxFreq = max(maxFreq, counts[s[right]])",
+                                  "While (right - left + 1 - maxFreq) > k: counts[s[left]] -= 1; left += 1",
+                                  "Track max(right - left + 1)"])
+            ],
+            starterCode: [
+                .swift: "func characterReplacement(_ s: String, _ k: Int) -> Int {\n    // Write your solution here\n    return 0\n}\n",
+                .python: "def character_replacement(s: str, k: int) -> int:\n    # Write your solution here\n    return 0\n"
+            ],
+            followUp: nil
+        ),
+
+        Problem(
+            id: "redundant-connection",
+            title: "Redundant Connection",
+            difficulty: .medium,
+            topics: [.graphs],
+            companies: [.google, .uber],
+            prompt: "You're given a graph that started as a tree of n nodes, with one extra edge added (creating exactly one cycle). Find the extra edge -- if multiple could be removed to fix the tree, return the one that appears last in the input.",
+            constraints: ["3 ≤ n ≤ 1000"],
+            examples: [
+                Example(input: "edges = [[1,2],[1,3],[2,3]]", output: "[2,3]", explanation: nil)
+            ],
+            hints: [
+                "The 'extra' edge is the one that connects two nodes ALREADY reachable from each other -- adding it is what creates the cycle.",
+                "Union-Find (disjoint set union) lets you process edges one at a time and cheaply check 'are these two nodes already in the same component?'",
+                "The first edge where both endpoints are already unioned together is your answer."
+            ],
+            approaches: [
+                Approach(name: "Union-Find, first edge that would form a cycle", summary: "Process edges in order, union-ing endpoints; the first edge whose endpoints are already connected is redundant.",
+                         timeComplexity: "O(n · α(n))", spaceComplexity: "O(n)",
+                         whenToUse: "The standard, optimal approach -- a classic union-find application.",
+                         steps: ["parent[i] = i for all nodes", "For each edge (u, v): if find(u) == find(v): return this edge",
+                                  "Else: union(u, v)"])
+            ],
+            starterCode: [
+                .swift: "func findRedundantConnection(_ edges: [[Int]]) -> [Int] {\n    // Write your solution here\n    return []\n}\n",
+                .python: "def find_redundant_connection(edges: list[list[int]]) -> list[int]:\n    # Write your solution here\n    return []\n"
+            ],
+            followUp: nil
+        ),
+
+        Problem(
+            id: "network-delay-time",
+            title: "Network Delay Time",
+            difficulty: .medium,
+            topics: [.graphs, .heaps],
+            companies: [.uber, .google],
+            prompt: "You're given a network of `n` nodes and travel times as directed edges (u, v, w). Starting from node `k`, return the minimum time for a signal to reach all nodes, or -1 if impossible.",
+            constraints: ["1 ≤ n ≤ 100", "1 ≤ k ≤ n"],
+            examples: [
+                Example(input: "times = [[2,1,1],[2,3,1],[3,4,1]], n = 4, k = 2", output: "2", explanation: nil)
+            ],
+            hints: [
+                "This is shortest-path-from-a-single-source with weighted edges -- exactly what Dijkstra's algorithm solves.",
+                "Use a min-heap of (distance, node), always expanding the closest unvisited node next, and answer with the maximum distance across all reachable nodes (the last one to receive the signal)."
+            ],
+            approaches: [
+                Approach(name: "Dijkstra's algorithm", summary: "Min-heap-driven shortest path from k to every other node; answer is the max distance (or -1 if any node is unreachable).",
+                         timeComplexity: "O(E log V)", spaceComplexity: "O(V + E)",
+                         whenToUse: "The standard, optimal approach for non-negative weighted shortest paths.",
+                         steps: ["Build adjacency list; dist = {k: 0}; heap = [(0, k)]",
+                                  "While heap not empty: pop (d, node); skip if already finalized with a better distance",
+                                  "For each neighbor: relax distance, push (newDist, neighbor) if improved",
+                                  "If all n nodes got a distance, return max(dist.values), else -1"])
+            ],
+            starterCode: [
+                .swift: "func networkDelayTime(_ times: [[Int]], _ n: Int, _ k: Int) -> Int {\n    // Write your solution here\n    return -1\n}\n",
+                .python: "def network_delay_time(times: list[list[int]], n: int, k: int) -> int:\n    # Write your solution here\n    return -1\n"
+            ],
+            followUp: nil
+        ),
+
+        Problem(
+            id: "course-schedule-ii",
+            title: "Course Schedule II",
+            difficulty: .medium,
+            topics: [.graphs],
+            companies: [.google, .amazon],
+            prompt: "Given `numCourses` and a list of prerequisite pairs, return a valid order to take all courses, or an empty array if it's impossible (a cycle exists).",
+            constraints: ["1 ≤ numCourses ≤ 2000"],
+            examples: [
+                Example(input: "numCourses = 4, prerequisites = [[1,0],[2,0],[3,1],[3,2]]", output: "[0,1,2,3] (one valid order)", explanation: nil)
+            ],
+            hints: [
+                "This is the same graph as Course Schedule I, but instead of just detecting a cycle, you need to actually produce a valid ordering -- that's a topological sort.",
+                "Kahn's algorithm: repeatedly take a course with zero remaining prerequisites, 'take' it, and decrement the prerequisite count of courses that depended on it."
+            ],
+            approaches: [
+                Approach(name: "Kahn's algorithm (BFS topological sort)", summary: "Repeatedly remove zero-in-degree nodes, appending them to the order and decrementing their neighbors' in-degree.",
+                         timeComplexity: "O(V + E)", spaceComplexity: "O(V + E)",
+                         whenToUse: "The standard, expected solution.",
+                         steps: ["Build adjacency list + in-degree count per course",
+                                  "queue = all courses with in-degree 0",
+                                  "While queue not empty: pop course, append to order; decrement in-degree of its dependents, enqueue any that hit 0",
+                                  "If order.count == numCourses, return order; else return [] (cycle detected)"])
+            ],
+            starterCode: [
+                .swift: "func findOrder(_ numCourses: Int, _ prerequisites: [[Int]]) -> [Int] {\n    // Write your solution here\n    return []\n}\n",
+                .python: "def find_order(num_courses: int, prerequisites: list[list[int]]) -> list[int]:\n    # Write your solution here\n    return []\n"
+            ],
+            followUp: nil
+        ),
+
+        Problem(
+            id: "house-robber-ii",
+            title: "House Robber II",
+            difficulty: .medium,
+            topics: [.dynamicProgramming],
+            companies: [.amazon],
+            prompt: "Same as House Robber, but the houses are arranged in a circle -- the first and last houses are adjacent. Find the maximum amount you can rob.",
+            constraints: ["1 ≤ nums.count ≤ 100"],
+            examples: [
+                Example(input: "nums = [2,3,2]", output: "3", explanation: "Robbing houses 1 and 3 isn't allowed since they're adjacent in the circle; best is just house 2.")
+            ],
+            hints: [
+                "The circular constraint means you can never rob BOTH the first and last house together.",
+                "So: either the first house is excluded, or the last house is excluded -- run the original (linear) House Robber on both cases and take the better result."
+            ],
+            approaches: [
+                Approach(name: "Two linear House Robber passes", summary: "Run the linear DP once excluding the first house, once excluding the last, and take the max.",
+                         timeComplexity: "O(n)", spaceComplexity: "O(1)",
+                         whenToUse: "The standard reduction to the non-circular version.",
+                         steps: ["If only one house, return its value",
+                                  "result1 = linearRob(nums[0..<n-1]) -- excludes last house",
+                                  "result2 = linearRob(nums[1..<n]) -- excludes first house",
+                                  "Return max(result1, result2)"])
+            ],
+            starterCode: [
+                .swift: "func rob(_ nums: [Int]) -> Int {\n    // Write your solution here\n    return 0\n}\n",
+                .python: "def rob(nums: list[int]) -> int:\n    # Write your solution here\n    return 0\n"
+            ],
+            followUp: nil
+        ),
+
+        Problem(
+            id: "partition-equal-subset-sum",
+            title: "Partition Equal Subset Sum",
+            difficulty: .medium,
+            topics: [.dynamicProgramming],
+            companies: [.amazon, .google],
+            prompt: "Given an array of positive integers, determine if it can be partitioned into two subsets with equal sum.",
+            constraints: ["1 ≤ nums.count ≤ 200"],
+            examples: [
+                Example(input: "nums = [1,5,11,5]", output: "true", explanation: "[1,5,5] and [11] both sum to 11.")
+            ],
+            hints: [
+                "If the total sum is odd, it's immediately impossible to split evenly -- an easy early exit.",
+                "Otherwise this reduces to: 'can some subset of nums sum to exactly totalSum / 2?' -- a classic 0/1 knapsack-shaped question.",
+                "dp[s] = true if some subset sums to exactly s; process each number once, updating reachable sums from high to low to avoid reusing a number twice."
+            ],
+            approaches: [
+                Approach(name: "0/1 knapsack subset-sum DP", summary: "Track which sums up to totalSum/2 are reachable using a boolean DP array, one number at a time.",
+                         timeComplexity: "O(n · sum)", spaceComplexity: "O(sum)",
+                         whenToUse: "The standard, expected solution.",
+                         steps: ["If totalSum is odd, return false; target = totalSum / 2",
+                                  "dp = array of target+1 falses; dp[0] = true",
+                                  "For each num: for s from target down to num: dp[s] = dp[s] || dp[s - num]",
+                                  "Return dp[target]"])
+            ],
+            starterCode: [
+                .swift: "func canPartition(_ nums: [Int]) -> Bool {\n    // Write your solution here\n    return false\n}\n",
+                .python: "def can_partition(nums: list[int]) -> bool:\n    # Write your solution here\n    return False\n"
+            ],
+            followUp: nil
+        ),
+
+        Problem(
+            id: "longest-palindromic-substring",
+            title: "Longest Palindromic Substring",
+            difficulty: .medium,
+            topics: [.dynamicProgramming, .twoPointers],
+            companies: [.amazon, .microsoft, .meta],
+            prompt: "Given a string `s`, return the longest palindromic substring within it.",
+            constraints: ["1 ≤ s.length ≤ 1000"],
+            examples: [
+                Example(input: "s = \"babad\"", output: "\"bab\" (or \"aba\")", explanation: nil)
+            ],
+            hints: [
+                "Checking every substring for being a palindrome is O(n³) total -- too slow. Think about growing palindromes OUTWARD from a center instead.",
+                "Every palindrome has a center -- either a single character (odd length) or a gap between two characters (even length). Try expanding from each of the 2n-1 possible centers.",
+                "There's also a DP formulation: a substring is a palindrome if its ends match AND the substring inside those ends is also a palindrome (or is trivially short)."
+            ],
+            approaches: [
+                Approach(name: "Expand around center", summary: "For each of the 2n-1 possible centers, expand outward while characters match, tracking the longest found.",
+                         timeComplexity: "O(n²)", spaceComplexity: "O(1)",
+                         whenToUse: "The standard approach -- simple and efficient enough for typical constraints.",
+                         steps: ["For each center (both single-character and between-character):",
+                                  "Expand left/right while s[left] == s[right]",
+                                  "Track the longest palindrome found across all centers"]),
+                Approach(name: "2D DP table", summary: "dp[i][j] = true if s[i...j] is a palindrome, built from shorter substrings outward.",
+                         timeComplexity: "O(n²)", spaceComplexity: "O(n²)",
+                         whenToUse: "A more systematic alternative, useful if you also need to answer many palindrome-range queries.",
+                         steps: ["dp[i][i] = true for all i", "dp[i][i+1] = (s[i] == s[i+1])",
+                                  "For length ≥ 3: dp[i][j] = (s[i]==s[j]) && dp[i+1][j-1]",
+                                  "Track the (i,j) pair with the longest true span"])
+            ],
+            starterCode: [
+                .swift: "func longestPalindrome(_ s: String) -> String {\n    // Write your solution here\n    return \"\"\n}\n",
+                .python: "def longest_palindrome(s: str) -> str:\n    # Write your solution here\n    return \"\"\n"
+            ],
+            followUp: nil
+        ),
+
+        Problem(
+            id: "subarray-sum-equals-k",
+            title: "Subarray Sum Equals K",
+            difficulty: .medium,
+            topics: [.arrays],
+            companies: [.meta, .amazon, .google],
+            prompt: "Given an integer array `nums` and an integer `k`, return the total number of contiguous subarrays whose sum equals k.",
+            constraints: ["1 ≤ nums.count ≤ 2 × 10^4"],
+            examples: [
+                Example(input: "nums = [1,1,1], k = 2", output: "2", explanation: nil)
+            ],
+            hints: [
+                "The array can contain negative numbers, so a sliding window (which relies on sums only growing as you extend right) doesn't directly work here.",
+                "Think in terms of PREFIX sums: subarray (i, j] sums to k exactly when prefixSum[j] - prefixSum[i] == k.",
+                "As you scan and track a running prefix sum, ask: 'how many earlier prefix sums equal (currentPrefixSum - k)?' -- a hash map of prefix-sum counts answers that in O(1)."
+            ],
+            approaches: [
+                Approach(name: "Prefix sum + hash map of counts", summary: "Track a running prefix sum and a map of how many times each prefix sum has occurred so far.",
+                         timeComplexity: "O(n)", spaceComplexity: "O(n)",
+                         whenToUse: "The standard, optimal approach -- handles negative numbers correctly, unlike sliding window.",
+                         steps: ["prefixCounts = {0: 1}; sum = 0; result = 0",
+                                  "For each num: sum += num", "result += prefixCounts[sum - k] ?? 0",
+                                  "prefixCounts[sum] = (prefixCounts[sum] ?? 0) + 1", "Return result"])
+            ],
+            starterCode: [
+                .swift: "func subarraySum(_ nums: [Int], _ k: Int) -> Int {\n    // Write your solution here\n    return 0\n}\n",
+                .python: "def subarray_sum(nums: list[int], k: int) -> int:\n    # Write your solution here\n    return 0\n"
+            ],
+            followUp: nil
+        ),
+
+        Problem(
+            id: "best-time-buy-sell-stock-cooldown",
+            title: "Best Time to Buy and Sell Stock with Cooldown",
+            difficulty: .medium,
+            topics: [.dynamicProgramming],
+            companies: [.amazon, .google],
+            prompt: "Given daily stock prices, maximize profit from as many transactions as you like, but after selling you must wait one day (cooldown) before buying again. You can't hold more than one share at a time.",
+            constraints: ["1 ≤ prices.count ≤ 5000"],
+            examples: [
+                Example(input: "prices = [1,2,3,0,2]", output: "3", explanation: "buy(1) sell(2) cooldown buy(0) sell(2): 1+2=3")
+            ],
+            hints: [
+                "At any given day, you're in one of three states: holding a stock, just sold (in cooldown), or free to buy (not holding, not in cooldown).",
+                "Define three running values for 'best profit if I end today in each state', and write a transition for how each state could have been reached from yesterday's states."
+            ],
+            approaches: [
+                Approach(name: "State-machine DP (hold / sold / rest)", summary: "Track the best achievable profit for three daily states, transitioning between them day by day.",
+                         timeComplexity: "O(n)", spaceComplexity: "O(1)",
+                         whenToUse: "The standard, optimal approach for cooldown-constrained trading problems.",
+                         steps: ["hold = -prices[0], sold = 0, rest = 0 (initial day)",
+                                  "Each subsequent day: newHold = max(hold, rest - price)",
+                                  "newSold = hold + price", "newRest = max(rest, sold)",
+                                  "hold, sold, rest = newHold, newSold, newRest",
+                                  "Return max(sold, rest) at the end"])
+            ],
+            starterCode: [
+                .swift: "func maxProfit(_ prices: [Int]) -> Int {\n    // Write your solution here\n    return 0\n}\n",
+                .python: "def max_profit(prices: list[int]) -> int:\n    # Write your solution here\n    return 0\n"
+            ],
+            followUp: nil
+        ),
+
+        Problem(
+            id: "insert-delete-getrandom",
+            title: "Insert Delete GetRandom O(1)",
+            difficulty: .medium,
+            topics: [.arrays, .heaps],
+            companies: [.amazon, .meta],
+            prompt: "Design a data structure supporting insert(val), remove(val), and getRandom() (uniformly random existing element), all in average O(1) time.",
+            constraints: ["up to 2 × 10^5 total calls"],
+            examples: [
+                Example(input: "insert(1); insert(2); remove(1); getRandom() -> 2", output: "see explanation", explanation: nil)
+            ],
+            hints: [
+                "A hash set alone gives O(1) insert/remove/contains, but has no way to pick a uniformly random element in O(1) -- you can't index into a set.",
+                "An array DOES support O(1) random access by index -- but removing from the middle of an array is O(n) unless you're clever about it.",
+                "Combine both: an array for random access, plus a hash map from value -> its index in the array. To remove in O(1), swap the target with the LAST array element before popping, and update the map."
+            ],
+            approaches: [
+                Approach(name: "Array + value-to-index hash map", summary: "Array gives O(1) random access; swap-with-last-then-pop gives O(1) removal; hash map tracks each value's current index.",
+                         timeComplexity: "O(1) average per operation", spaceComplexity: "O(n)",
+                         whenToUse: "The standard, expected solution for this classic design problem.",
+                         steps: ["insert(val): if already present, return false; else append to array, map[val] = array.count-1",
+                                  "remove(val): if absent, return false; swap array[map[val]] with the last element, update the swapped value's index in map, pop the array, remove val from map",
+                                  "getRandom(): return array[random index]"])
+            ],
+            starterCode: [
+                .swift: "final class RandomizedSet {\n    init() {\n        // Write your solution here\n    }\n    func insert(_ val: Int) -> Bool {\n        return false\n    }\n    func remove(_ val: Int) -> Bool {\n        return false\n    }\n    func getRandom() -> Int {\n        return 0\n    }\n}\n",
+                .python: "class RandomizedSet:\n    def __init__(self):\n        pass\n    def insert(self, val: int) -> bool:\n        return False\n    def remove(self, val: int) -> bool:\n        return False\n    def get_random(self) -> int:\n        return 0\n"
+            ],
+            followUp: nil
+        ),
+
+        Problem(
+            id: "time-based-key-value-store",
+            title: "Time Based Key-Value Store",
+            difficulty: .medium,
+            topics: [.binarySearch, .arrays],
+            companies: [.amazon, .linkedin],
+            prompt: "Design a time-based key-value store: `set(key, value, timestamp)` stores a value at a given timestamp; `get(key, timestamp)` returns the value set at the largest timestamp ≤ the given one (or empty string if none).",
+            constraints: ["timestamps are strictly increasing per key across set() calls", "up to 2 × 10^5 total calls"],
+            examples: [
+                Example(input: "set(\"foo\",\"bar\",1); get(\"foo\",1) -> \"bar\"; get(\"foo\",4) -> \"bar\"", output: "see explanation", explanation: nil)
+            ],
+            hints: [
+                "Since timestamps for a given key only ever increase, each key's history of (timestamp, value) pairs is naturally sorted -- no extra sorting needed.",
+                "'Largest timestamp ≤ target' in a sorted list is a classic binary search (upper-bound-minus-one) pattern."
+            ],
+            approaches: [
+                Approach(name: "Per-key sorted list + binary search", summary: "Store each key's (timestamp, value) history in append order (already sorted); binary search for the query.",
+                         timeComplexity: "O(log n) per get, O(1) amortized per set", spaceComplexity: "O(n)",
+                         whenToUse: "The standard, expected solution.",
+                         steps: ["set(key, value, ts): store[key].append((ts, value))",
+                                  "get(key, ts): binary search store[key] for the rightmost entry with timestamp ≤ ts",
+                                  "Return its value, or \"\" if none exists"])
+            ],
+            starterCode: [
+                .swift: "final class TimeMap {\n    init() {\n        // Write your solution here\n    }\n    func set(_ key: String, _ value: String, _ timestamp: Int) {\n    }\n    func get(_ key: String, _ timestamp: Int) -> String {\n        return \"\"\n    }\n}\n",
+                .python: "class TimeMap:\n    def __init__(self):\n        pass\n    def set(self, key: str, value: str, timestamp: int) -> None:\n        pass\n    def get(self, key: str, timestamp: int) -> str:\n        return \"\"\n"
+            ],
+            followUp: nil
+        ),
+
+        Problem(
+            id: "word-search-ii",
+            title: "Word Search II",
+            difficulty: .hard,
+            topics: [.backtracking, .tries],
+            companies: [.amazon, .google, .uber],
+            prompt: "Given an `m x n` grid of characters and a list of words, return all words from the list that can be formed by a path of adjacent (up/down/left/right) cells, without reusing a cell within one word.",
+            constraints: ["1 ≤ m, n ≤ 12", "1 ≤ words.count ≤ 3 × 10^4"],
+            examples: [
+                Example(input: "board + words = [\"oath\",\"pea\",\"eat\",\"rain\"]", output: "[\"oath\",\"eat\"]", explanation: nil)
+            ],
+            hints: [
+                "Running a separate word-search DFS from scratch for every single word is far too slow when there are thousands of words.",
+                "Build a Trie out of ALL the words first, then do ONE combined DFS over the board, walking the Trie alongside your path -- this lets many words share the same search work and lets you prune branches the instant no word could match.",
+                "Mark a word as found in the Trie node itself once discovered, and prune that branch afterward to avoid duplicate work."
+            ],
+            approaches: [
+                Approach(name: "Trie + single combined backtracking search", summary: "Build a Trie of all target words; DFS from every board cell, following Trie edges, collecting complete words as you go.",
+                         timeComplexity: "O(m · n · 4^L) worst case, L = longest word", spaceComplexity: "O(total characters across words)",
+                         whenToUse: "The standard, expected optimal approach -- turns a hard problem manageable at scale.",
+                         steps: ["Build a Trie from all words, marking word-end nodes with the full word",
+                                  "For each starting cell: DFS, at each step following the Trie edge matching the current board character",
+                                  "If a Trie node marks a complete word, record it (and avoid re-recording)",
+                                  "Backtrack (unmark visited cell) after exploring"])
+            ],
+            starterCode: [
+                .swift: "func findWords(_ board: [[Character]], _ words: [String]) -> [String] {\n    // Write your solution here\n    return []\n}\n",
+                .python: "def find_words(board: list[list[str]], words: list[str]) -> list[str]:\n    # Write your solution here\n    return []\n"
+            ],
+            followUp: nil
+        ),
+
+        Problem(
+            id: "basic-calculator",
+            title: "Basic Calculator",
+            difficulty: .hard,
+            topics: [.stack],
+            companies: [.amazon, .google],
+            prompt: "Implement a basic calculator to evaluate a string expression containing non-negative integers, `+`, `-`, parentheses, and spaces (no multiplication/division).",
+            constraints: ["1 ≤ s.length ≤ 3 × 10^5"],
+            examples: [
+                Example(input: "s = \"(1+(4+5+2)-3)+(6+8)\"", output: "23", explanation: nil)
+            ],
+            hints: [
+                "Parentheses mean you sometimes need to 'pause' the current running total and sign while you evaluate a nested expression -- that's a natural fit for a stack.",
+                "Track a running result and a 'current sign' (+1 or -1) as you scan left to right; on '(', push both onto a stack and reset; on ')', pop and combine.",
+                "Numbers can be multi-digit, so accumulate digits until you hit a non-digit character."
+            ],
+            approaches: [
+                Approach(name: "Single pass with a sign/result stack", summary: "Scan once, maintaining a running result and sign, pushing/popping state at parentheses.",
+                         timeComplexity: "O(n)", spaceComplexity: "O(n) worst case (nested parens)",
+                         whenToUse: "The standard, expected solution -- avoids building a full expression tree.",
+                         steps: ["result = 0, sign = 1, stack = []",
+                                  "On a digit: accumulate the full number, then result += sign * number",
+                                  "On '+': sign = 1. On '-': sign = -1",
+                                  "On '(': push (result, sign) onto stack; reset result = 0, sign = 1",
+                                  "On ')': pop (prevResult, prevSign); result = prevResult + prevSign * result"])
+            ],
+            starterCode: [
+                .swift: "func calculate(_ s: String) -> Int {\n    // Write your solution here\n    return 0\n}\n",
+                .python: "def calculate(s: str) -> int:\n    # Write your solution here\n    return 0\n"
+            ],
+            followUp: "How would you extend this to support multiplication and division too?"
+        ),
+
+        Problem(
+            id: "cheapest-flights-within-k-stops",
+            title: "Cheapest Flights Within K Stops",
+            difficulty: .hard,
+            topics: [.graphs, .dynamicProgramming],
+            companies: [.uber, .amazon],
+            prompt: "Given `n` cities, flight routes with prices, a source, a destination, and a max number of stops `k`, find the cheapest price from source to destination using at most k+1 flights, or -1 if impossible.",
+            constraints: ["1 ≤ n ≤ 100", "0 ≤ k ≤ n-1"],
+            examples: [
+                Example(input: "n = 4, flights = [[0,1,100],[1,2,100],[2,0,100],[1,3,600],[2,3,200]], src=0, dst=3, k=1",
+                        output: "700", explanation: "0 -> 1 -> 3 costs 100+600=700 within 1 stop.")
+            ],
+            hints: [
+                "Plain Dijkstra doesn't directly respect the 'at most k stops' limit -- the cheapest overall path might use too many stops.",
+                "Think of it as Bellman-Ford limited to k+1 rounds: each round, relax all edges using ONLY distances from the previous round (not updates made within the same round), so you never use more than that many flights.",
+                "Using a snapshot/copy of distances at the start of each round is important -- relaxing in place can let a path 'sneak in' an extra hop."
+            ],
+            approaches: [
+                Approach(name: "Bellman-Ford limited to k+1 rounds", summary: "Relax all edges for exactly k+1 rounds, using a frozen snapshot of the previous round's distances each time.",
+                         timeComplexity: "O(k · E)", spaceComplexity: "O(n)",
+                         whenToUse: "The standard, expected approach for a stop-limited shortest path.",
+                         steps: ["dist = array of n infinities; dist[src] = 0",
+                                  "Repeat k+1 times: snapshot = copy of dist",
+                                  "For each edge (u, v, price): if snapshot[u] + price < dist[v]: dist[v] = snapshot[u] + price",
+                                  "Return dist[dst] if finite, else -1"])
+            ],
+            starterCode: [
+                .swift: "func findCheapestPrice(_ n: Int, _ flights: [[Int]], _ src: Int, _ dst: Int, _ k: Int) -> Int {\n    // Write your solution here\n    return -1\n}\n",
+                .python: "def find_cheapest_price(n: int, flights: list[list[int]], src: int, dst: int, k: int) -> int:\n    # Write your solution here\n    return -1\n"
+            ],
+            followUp: nil
         )
 
     ]

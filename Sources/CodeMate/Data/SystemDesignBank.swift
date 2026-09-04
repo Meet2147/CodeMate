@@ -446,6 +446,109 @@ enum SystemDesignBank {
                     "How would you make matching resilient to a driver going offline right after being matched?"
                 ])
             ]
+        ),
+
+        SystemDesignQuestion(
+            id: "hld-distributed-job-scheduler",
+            title: "Design a Distributed Job Scheduler",
+            scope: .hld,
+            companies: [.google, .amazon, .uber],
+            difficulty: .hard,
+            prompt: "Design a system that lets services schedule jobs to run at a specific time or on a recurring cron-like schedule, reliably executing them exactly once even as workers come and go.",
+            clarifyingQuestions: [
+                "Do jobs need exactly-once execution, or is at-least-once (with idempotent jobs) acceptable?",
+                "What's the expected job volume and how far in advance are jobs typically scheduled?",
+                "Do jobs need to run on specific worker types (e.g. GPU jobs vs. CPU jobs)?"
+            ],
+            sections: [
+                DesignSection(heading: "Requirements", bullets: [
+                    "Functional: schedule a one-off or recurring job; execute it at the right time; retry on failure; support cancellation",
+                    "Non-functional: durable (a scheduled job survives a crash), scales to a high volume of jobs, low scheduling-to-execution latency"
+                ]),
+                DesignSection(heading: "Core architecture", bullets: [
+                    "A durable job store (database) holds job definitions plus their next-run time",
+                    "A scheduler/dispatcher polls (or is notified of) jobs whose next-run time has arrived and pushes them onto a work queue",
+                    "A pool of workers pulls from the queue, executes the job, and reports success/failure back to the job store",
+                    "On failure, the dispatcher re-enqueues with backoff, up to a retry limit"
+                ]),
+                DesignSection(heading: "Key trade-offs", bullets: [
+                    "Exactly-once execution is genuinely hard in a distributed system -- most real schedulers aim for at-least-once delivery and require jobs to be idempotent, using a dedup key to detect an accidental re-run",
+                    "A single dispatcher polling the job store doesn't scale -- typically sharded by time bucket or job-id hash so multiple dispatcher instances can work in parallel without double-claiming",
+                    "A worker crashing mid-job needs a visibility timeout / lease mechanism (like SQS) so its job gets reclaimed by another worker instead of silently vanishing"
+                ]),
+                DesignSection(heading: "Good follow-ups to rehearse", bullets: [
+                    "How would you handle a job that consistently fails (a 'poison' job) without it clogging retries forever?",
+                    "How would you support job priorities so urgent jobs don't wait behind a backlog of low-priority ones?"
+                ])
+            ]
+        ),
+
+        SystemDesignQuestion(
+            id: "hld-collaborative-whiteboard",
+            title: "Design a Collaborative Whiteboard",
+            scope: .hld,
+            companies: [.meta, .google, .microsoft],
+            difficulty: .hard,
+            prompt: "Design a real-time collaborative whiteboard (like the one in this app!) where multiple people can draw shapes, text, and freehand strokes on the same canvas at once and see each other's changes live.",
+            clarifyingQuestions: [
+                "How many concurrent editors on one board -- a handful (pair design session) or hundreds?",
+                "Do we need offline support (someone edits while disconnected, then reconnects)?",
+                "Does history/undo need to be per-user or global across the whole board?"
+            ],
+            sections: [
+                DesignSection(heading: "Requirements", bullets: [
+                    "Functional: multiple users draw on a shared canvas; changes propagate to everyone in near-real-time; persist the board so it can be reopened later",
+                    "Non-functional: low-latency propagation (feels 'live'), consistent final state even when two people edit concurrently"
+                ]),
+                DesignSection(heading: "Core architecture", bullets: [
+                    "Each client maintains a local copy of the board's elements (strokes/shapes) and renders optimistically as the user draws",
+                    "A WebSocket connection to a real-time server broadcasts each new/changed element to every other connected client on that board",
+                    "The server persists elements to a database (or an append-only log of operations) so the board survives disconnects and can be reloaded"
+                ]),
+                DesignSection(heading: "Key trade-offs", bullets: [
+                    "Naive 'last write wins' on conflicting edits can silently lose someone's work -- CRDTs (conflict-free replicated data types) or operational transforms let concurrent edits merge deterministically without a central lock, at the cost of real implementation complexity",
+                    "For a whiteboard specifically, most elements (individual strokes/shapes) are independently addressable and rarely edited by two people at the exact same instant -- so many real products get away with simple last-write-wins per element instead of full OT/CRDT, trading rare edge-case data loss for much simpler engineering",
+                    "Broadcasting via a central server is simple but adds a hop of latency; peer-to-peer (WebRTC data channels) cuts latency further but complicates the 'who has the source of truth' story"
+                ]),
+                DesignSection(heading: "Good follow-ups to rehearse", bullets: [
+                    "How would you implement undo/redo when other people might have drawn on top of the element you're undoing?",
+                    "How would you scale one hugely popular board past what a single server's WebSocket connections can hold?"
+                ])
+            ]
+        ),
+
+        SystemDesignQuestion(
+            id: "hld-payments-checkout",
+            title: "Design a Payments / Checkout System",
+            scope: .hld,
+            companies: [.amazon, .uber],
+            difficulty: .hard,
+            prompt: "Design the checkout system for an e-commerce or ride-hailing platform: charge a customer's payment method reliably, exactly once, even if network calls fail partway through.",
+            clarifyingQuestions: [
+                "Are we integrating with an external payment processor (Stripe-like), or building payment processing itself?",
+                "Do we need to support partial refunds and disputes/chargebacks?",
+                "What's the acceptable latency for a checkout to complete?"
+            ],
+            sections: [
+                DesignSection(heading: "Requirements", bullets: [
+                    "Functional: charge a payment method for an order; handle success/failure/timeout from the processor; support refunds",
+                    "Non-functional: a charge must never happen twice for one order, and money must never simply vanish (no charge lost due to a crash mid-request)"
+                ]),
+                DesignSection(heading: "Core architecture", bullets: [
+                    "An order is created in a 'pending payment' state before any charge attempt",
+                    "The payment service calls an external processor with a unique idempotency key tied to the order, so a retried request after a timeout doesn't double-charge",
+                    "A webhook (or polling) from the processor confirms the final outcome, transitioning the order to paid/failed -- the system doesn't trust only the synchronous response, since that call itself can fail after the charge actually succeeded"
+                ]),
+                DesignSection(heading: "Key trade-offs", bullets: [
+                    "The hardest part isn't charging a card -- it's handling the 'we don't know if it worked' case when a network call to the processor times out. Idempotency keys plus reconciling against the processor's own webhook/record of truth is how real systems solve this, rather than assuming a timeout means failure",
+                    "Synchronous, in-request charging is simple but ties your checkout's latency and reliability to the payment processor's; an async pattern (mark pending, confirm via webhook, notify the user) is more resilient but means checkout isn't instantly 'done' from the user's point of view",
+                    "Idempotency keys need to be stored durably (not just in memory) so a retry after a full service restart still recognizes 'this exact charge was already attempted'"
+                ]),
+                DesignSection(heading: "Good follow-ups to rehearse", bullets: [
+                    "How would you reconcile your internal order records against the payment processor's records if they ever drift out of sync?",
+                    "How would you handle a refund for an order that's already been fulfilled/shipped?"
+                ])
+            ]
         )
 
     ]

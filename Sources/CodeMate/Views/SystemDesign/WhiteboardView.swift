@@ -102,14 +102,7 @@ struct WhiteboardView: View {
                 .gesture(drawGesture(in: geo.size))
 
                 if let location = pendingTextLocation {
-                    TextField("Label", text: $textDraft, onCommit: { commitText(at: location) })
-                        .textFieldStyle(.plain)
-                        .font(.system(size: 13, weight: .semibold))
-                        .foregroundStyle(color)
-                        .padding(4)
-                        .background(RoundedRectangle(cornerRadius: 4).fill(Color.black.opacity(0.4)))
-                        .frame(width: 160)
-                        .position(x: location.x + 70, y: location.y)
+                    textEntryBox(at: location, canvasSize: geo.size)
                 }
             }
         }
@@ -174,6 +167,38 @@ struct WhiteboardView: View {
         }
     }
 
+    /// A proper multi-line text box (not just a single-line inline field) --
+    /// type a short label or a longer design note, Cmd+Return or the Done
+    /// button commits it to the canvas as a text element.
+    @ViewBuilder
+    private func textEntryBox(at location: CGPoint, canvasSize: CGSize) -> some View {
+        let boxWidth: CGFloat = 220
+        let clampedX = min(max(location.x, boxWidth / 2 + 8), canvasSize.width - boxWidth / 2 - 8)
+        let clampedY = min(max(location.y, 70), canvasSize.height - 70)
+
+        VStack(alignment: .trailing, spacing: 6) {
+            TextEditor(text: $textDraft)
+                .font(.system(size: 13, weight: .medium))
+                .foregroundStyle(color)
+                .scrollContentBackground(.hidden)
+                .frame(width: boxWidth, height: 70)
+                .padding(6)
+                .background(RoundedRectangle(cornerRadius: 6).fill(Color.black.opacity(0.55)))
+                .overlay(RoundedRectangle(cornerRadius: 6).stroke(color.opacity(0.6), lineWidth: 1.5))
+                .onExitCommand { cancelText() }
+
+            HStack(spacing: 6) {
+                Button("Cancel") { cancelText() }
+                    .buttonStyle(IDEButtonStyle())
+                Button("Done ⌘⏎") { commitText(at: location) }
+                    .buttonStyle(IDEButtonStyle(tint: IDETheme.accent, prominent: true))
+                    .keyboardShortcut(.return, modifiers: .command)
+            }
+        }
+        .frame(width: boxWidth)
+        .position(x: clampedX, y: clampedY)
+    }
+
     private func commitText(at location: CGPoint) {
         let trimmed = textDraft.trimmingCharacters(in: .whitespacesAndNewlines)
         if !trimmed.isEmpty {
@@ -182,6 +207,11 @@ struct WhiteboardView: View {
         pendingTextLocation = nil
         textDraft = ""
         save()
+    }
+
+    private func cancelText() {
+        pendingTextLocation = nil
+        textDraft = ""
     }
 
     private func draw(_ element: WhiteboardElement, in context: inout GraphicsContext) {
