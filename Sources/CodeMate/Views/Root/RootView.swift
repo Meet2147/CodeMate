@@ -19,7 +19,7 @@ struct RootView: View {
     @Environment(\.colorScheme) private var scheme
     @Environment(AppPreferences.self) private var prefs
     @Environment(AuthManager.self) private var auth
-    @State private var section: AppSection? = .practice
+    @State private var section: AppSection = .practice
     @State private var showsSettings = false
 
     var body: some View {
@@ -41,17 +41,17 @@ struct RootView: View {
 
     private var mainView: some View {
         NavigationSplitView {
-            List(AppSection.allCases, selection: $section) { item in
-                Label(item.rawValue, systemImage: item.symbol)
-                    .font(.system(size: 13, weight: .medium))
-                    .lineLimit(1)
-                    .fixedSize(horizontal: true, vertical: false)
-                    .tag(item as AppSection?)
-                    .padding(.vertical, 5)
+            VStack(alignment: .leading, spacing: 2) {
+                ForEach(AppSection.allCases) { item in
+                    sidebarRow(item)
+                }
+                Spacer(minLength: 0)
             }
+            .padding(.horizontal, 8)
+            .padding(.top, 10)
             .navigationTitle("CodeMate")
-            .listStyle(.sidebar)
             .navigationSplitViewColumnWidth(min: 200, ideal: 210, max: 240)
+            .background(CMTheme.base(scheme))
             .safeAreaInset(edge: .bottom) {
                 Button {
                     showsSettings = true
@@ -64,7 +64,7 @@ struct RootView: View {
             }
         } detail: {
             Group {
-                switch section ?? .practice {
+                switch section {
                 case .practice: PracticeHomeView()
                 case .systemDesign: SystemDesignHomeView()
                 case .progress: ProgressHomeView()
@@ -78,5 +78,35 @@ struct RootView: View {
             SettingsView()
                 .frame(width: 520, height: 720)
         }
+    }
+
+    /// A hand-built row instead of List(selection:) -- that API's binding
+    /// silently stopped updating `section` once before (a tag-type
+    /// mismatch, since fixed) and clicks still weren't landing reliably
+    /// after that fix, most likely because `.fixedSize()` on the label
+    /// shrank the row's actual hit-testing area down to the text's
+    /// intrinsic width instead of the full row. Building the row directly
+    /// with an explicit full-width `.contentShape` removes any ambiguity
+    /// about what area is clickable or how selection state updates.
+    private func sidebarRow(_ item: AppSection) -> some View {
+        let isSelected = section == item
+        return HStack(spacing: 10) {
+            Image(systemName: item.symbol)
+                .font(.system(size: 13))
+                .frame(width: 18)
+            Text(item.rawValue)
+                .font(.system(size: 13, weight: .medium))
+            Spacer(minLength: 0)
+        }
+        .foregroundStyle(isSelected ? .white : CMTheme.textPrimary(scheme))
+        .padding(.horizontal, 10)
+        .padding(.vertical, 8)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(
+            RoundedRectangle(cornerRadius: 6, style: .continuous)
+                .fill(isSelected ? AnyShapeStyle(CMTheme.accent) : AnyShapeStyle(Color.clear))
+        )
+        .contentShape(Rectangle())
+        .onTapGesture { section = item }
     }
 }
