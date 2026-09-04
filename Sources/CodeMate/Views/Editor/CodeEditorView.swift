@@ -1,85 +1,71 @@
 import SwiftUI
 import AppKit
 
-/// A lightweight code editor: monospaced NSTextView with a synced line-number
-/// gutter (NSRulerView) inside a scroll view. Not a full syntax-highlighting
-/// engine -- kept intentionally simple and dependency-free for the MVP.
+/// A lightweight code editor: monospaced NSTextView inside a scroll view.
+/// Not a full syntax-highlighting engine, and (for now) no line-number
+/// gutter -- kept intentionally simple after two rounds of live, on-device
+/// testing (not guessing) traced actual rendering breakage to:
+/// 1. Colors bridged from SwiftUI's Color(IDETheme.xxx) via NSColor(Color)
+///    -- the text data, focus, and layout were all provably correct
+///    (verified via the Accessibility API and a Cmd+A selection test that
+///    showed nothing painting), but glyphs never rendered. Fixed by
+///    building colors directly via NSColor(srgbRed:...) instead.
+/// 2. A second sibling view next to the text view -- tried both as
+///    NSScrollView's built-in NSRulerView integration and as a plain
+///    NSView positioned via Auto Layout constraints in a wrapping
+///    container -- broke the SAME way both times, even with the color fix
+///    in place. The exact mechanism isn't nailed down (something about
+///    NSViewRepresentable's external SwiftUI-driven sizing conflicting
+///    with a second internally-constrained subview), so the gutter is
+///    left out entirely for now rather than re-risking a fix that's
+///    confirmed to work end-to-end (typing, backspace, multi-line edits,
+///    Run all tested live). A line-number gutter is a real, worthwhile
+///    follow-up, just not worth reintroducing this exact failure mode to
+///    chase blind again.
 struct CodeEditorView: NSViewRepresentable {
     @Binding var text: String
 
-    /// Explicit font + foreground color for every character. Plain
-    /// `textView.string = ...` / `.textColor` alone turned out NOT to
-    /// reliably survive replacing the whole string -- confirmed by testing:
-    /// the ruler (which reads the layout manager directly) showed the
-    /// right line count for real, non-empty saved text, but the glyphs
-    /// themselves painted invisible. Setting attributes explicitly on the
-    /// text storage, every time, removes any ambiguity about where the
-    /// color comes from.
-    private static func attributes() -> [NSAttributedString.Key: Any] {
-        [
-            .font: NSFont.monospacedSystemFont(ofSize: 13, weight: .regular),
-            .foregroundColor: NSColor(IDETheme.textPrimary)
-        ]
-    }
+    private static let background = NSColor(srgbRed: 0.078, green: 0.082, blue: 0.094, alpha: 1.0)
+    private static let textColor = NSColor(srgbRed: 0.90, green: 0.90, blue: 0.90, alpha: 1.0)
+    private static let insertionColor = NSColor(srgbRed: 0.35, green: 0.62, blue: 1.0, alpha: 1.0)
 
     func makeNSView(context: Context) -> NSScrollView {
         let scrollView = NSScrollView()
-        let contentSize = scrollView.contentSize
 
-        let textView = NSTextView(frame: NSRect(origin: .zero, size: contentSize))
+        let textView = NSTextView()
         textView.isEditable = true
         textView.isSelectable = true
         textView.isRichText = false
         textView.allowsUndo = true
         textView.font = .monospacedSystemFont(ofSize: 13, weight: .regular)
-        textView.textContainerInset = NSSize(width: 10, height: 10)
+        textView.textColor = Self.textColor
+        textView.backgroundColor = Self.background
+        textView.drawsBackground = true
+        textView.insertionPointColor = Self.insertionColor
+        textView.textContainerInset = NSSize(width: 12, height: 10)
         textView.delegate = context.coordinator
-        textView.textStorage?.setAttributedString(NSAttributedString(string: text, attributes: Self.attributes()))
-        textView.typingAttributes = Self.attributes()
+        textView.string = text
         textView.isAutomaticQuoteSubstitutionEnabled = false
         textView.isAutomaticDashSubstitutionEnabled = false
         textView.isAutomaticTextReplacementEnabled = false
         textView.isAutomaticSpellingCorrectionEnabled = false
 
-        // Standard boilerplate for a scrollable, growable NSTextView --
-        // without this the text view keeps its tiny default frame and
-        // never properly tracks the scroll view, which makes clicks land
-        // outside its real (degenerate) bounds and breaks typing entirely.
-        textView.minSize = NSSize(width: 0, height: contentSize.height)
+        textView.minSize = NSSize(width: 0, height: 0)
         textView.maxSize = NSSize(width: CGFloat.greatestFiniteMagnitude, height: CGFloat.greatestFiniteMagnitude)
         textView.isVerticallyResizable = true
         textView.isHorizontallyResizable = false
         textView.autoresizingMask = [.width]
         textView.textContainer?.widthTracksTextView = true
-        textView.textContainer?.containerSize = NSSize(width: contentSize.width, height: CGFloat.greatestFiniteMagnitude)
-
-        // The editor is always-dark IDE chrome regardless of system
-        // appearance, so force dark aqua + explicit fixed colors rather
-        // than the dynamic NSColor.textColor/.secondaryLabelColor, which
-        // track the real system setting and would otherwise mismatch the
-        // forced-dark SwiftUI environment around it.
-        textView.appearance = NSAppearance(named: .darkAqua)
-        textView.drawsBackground = true
-        textView.backgroundColor = NSColor(IDETheme.inputBackground)
-        textView.textColor = NSColor(IDETheme.textPrimary)
-        textView.insertionPointColor = NSColor(IDETheme.accent)
 
         scrollView.documentView = textView
         scrollView.hasVerticalScroller = true
         scrollView.hasHorizontalScroller = false
         scrollView.autohidesScrollers = true
-        scrollView.appearance = NSAppearance(named: .darkAqua)
         scrollView.drawsBackground = true
-        scrollView.backgroundColor = NSColor(IDETheme.inputBackground)
-
-        let ruler = LineNumberRulerView(textView: textView)
-        scrollView.verticalRulerView = ruler
-        scrollView.hasVerticalRuler = true
-        scrollView.rulersVisible = true
+        scrollView.backgroundColor = Self.background
 
         context.coordinator.textView = textView
 
-        // Focus the editor as soon as it appears so typing works immediately.
         DispatchQueue.main.async {
             scrollView.window?.makeFirstResponder(textView)
         }
@@ -91,11 +77,9 @@ struct CodeEditorView: NSViewRepresentable {
         guard let textView = nsView.documentView as? NSTextView else { return }
         if textView.string != text {
             let selectedRanges = textView.selectedRanges
-            textView.textStorage?.setAttributedString(NSAttributedString(string: text, attributes: Self.attributes()))
-            textView.typingAttributes = Self.attributes()
+            textView.string = text
             textView.selectedRanges = selectedRanges
         }
-        (nsView.verticalRulerView as? LineNumberRulerView)?.needsDisplay = true
     }
 
     func makeCoordinator() -> Coordinator { Coordinator(text: $text) }
@@ -109,63 +93,6 @@ struct CodeEditorView: NSViewRepresentable {
         func textDidChange(_ notification: Notification) {
             guard let textView = notification.object as? NSTextView else { return }
             text.wrappedValue = textView.string
-        }
-    }
-}
-
-/// Minimal line-number gutter.
-final class LineNumberRulerView: NSRulerView {
-    private weak var textView: NSTextView?
-
-    init(textView: NSTextView) {
-        self.textView = textView
-        super.init(scrollView: textView.enclosingScrollView, orientation: .verticalRuler)
-        self.clientView = textView
-        self.ruleThickness = 36
-        NotificationCenter.default.addObserver(self, selector: #selector(contentDidChange),
-                                                 name: NSText.didChangeNotification, object: textView)
-    }
-
-    required init(coder: NSCoder) { fatalError("init(coder:) has not been implemented") }
-
-    @objc private func contentDidChange() { needsDisplay = true }
-
-    override func drawHashMarksAndLabels(in rect: NSRect) {
-        NSColor(IDETheme.inputBackground).setFill()
-        rect.fill()
-
-        guard let textView = textView, let layoutManager = textView.layoutManager,
-              let textContainer = textView.textContainer else { return }
-
-        let content = textView.string as NSString
-        let visibleRect = textView.enclosingScrollView?.contentView.bounds ?? .zero
-        let glyphRange = layoutManager.glyphRange(forBoundingRect: visibleRect, in: textContainer)
-        let charRange = layoutManager.characterRange(forGlyphRange: glyphRange, actualGlyphRange: nil)
-
-        var lineNumber = content.substring(to: charRange.location).components(separatedBy: "\n").count
-        var index = charRange.location
-
-        let attrs: [NSAttributedString.Key: Any] = [
-            .font: NSFont.monospacedSystemFont(ofSize: 10.5, weight: .regular),
-            .foregroundColor: NSColor(IDETheme.textTertiary)
-        ]
-
-        while index < NSMaxRange(charRange) {
-            let lineRange = content.lineRange(for: NSRange(location: index, length: 0))
-            let glyphIndex = layoutManager.glyphIndexForCharacter(at: lineRange.location)
-            var lineRect = layoutManager.lineFragmentRect(forGlyphAt: glyphIndex, effectiveRange: nil)
-            lineRect.origin.y += textView.textContainerInset.height
-
-            let numberString = "\(lineNumber)" as NSString
-            let size = numberString.size(withAttributes: attrs)
-            let drawRect = NSRect(x: ruleThickness - size.width - 8,
-                                   y: lineRect.minY - visibleRect.minY,
-                                   width: size.width, height: size.height)
-            numberString.draw(in: drawRect, withAttributes: attrs)
-
-            lineNumber += 1
-            index = NSMaxRange(lineRange)
-            if lineRange.length == 0 { break }
         }
     }
 }
