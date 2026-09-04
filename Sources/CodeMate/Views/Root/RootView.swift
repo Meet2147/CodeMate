@@ -18,7 +18,7 @@ enum AppSection: String, CaseIterable, Identifiable {
 struct RootView: View {
     @Environment(\.colorScheme) private var scheme
     @Environment(AppPreferences.self) private var prefs
-    @State private var section: AppSection = .practice
+    @State private var section: AppSection? = .practice
     @State private var showsSettings = false
 
     var body: some View {
@@ -54,7 +54,7 @@ struct RootView: View {
             }
         } detail: {
             Group {
-                switch section {
+                switch section ?? .practice {
                 case .practice: PracticeHomeView()
                 case .systemDesign: SystemDesignHomeView()
                 case .progress: ProgressHomeView()

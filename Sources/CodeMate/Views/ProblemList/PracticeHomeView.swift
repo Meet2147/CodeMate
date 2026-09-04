@@ -4,6 +4,7 @@ import SwiftData
 struct PracticeHomeView: View {
     @Environment(AppPreferences.self) private var prefs
     @Environment(LicenseManager.self) private var licenseManager
+    @Environment(PracticeCallCoordinator.self) private var call
     @Query private var progressRecords: [ProblemProgress]
 
     @State private var searchText = ""
@@ -13,6 +14,7 @@ struct PracticeHomeView: View {
     @State private var selectedProblemId: String?
     @State private var hasSeededFromPreferences = false
     @State private var showsPaywall = false
+    @State private var showsCallPanel = false
 
     private var progressByProblem: [String: ProblemProgress] {
         Dictionary(uniqueKeysWithValues: progressRecords.map { ($0.problemId, $0) })
@@ -118,22 +120,33 @@ struct PracticeHomeView: View {
         .sheet(isPresented: $showsPaywall) {
             PaywallView()
         }
+        .sheet(isPresented: $showsCallPanel) {
+            PracticeCallPanel(selectedProblemId: $selectedProblemId, currentProblem: ProblemBank.problem(id: selectedProblemId ?? ""))
+        }
     }
 
     private var header: some View {
-        VStack(alignment: .leading, spacing: 4) {
-            Text("DSA Practice")
-                .font(.system(size: 20, weight: .bold, design: .rounded))
-                .foregroundStyle(IDETheme.textPrimary)
-            if effectiveSelectedCompanies.count == 1, let company = effectiveSelectedCompanies.first {
-                Text("Frequently asked at \(company.rawValue)")
-                    .font(.system(size: 11, weight: .semibold))
-                    .foregroundStyle(CMTheme.companyColor(company))
-            } else {
-                Text("\(filtered.count) of \(ProblemBank.all.count) problems")
-                    .font(.system(size: 11.5, weight: .medium))
-                    .foregroundStyle(IDETheme.textSecondary)
+        HStack(alignment: .top) {
+            VStack(alignment: .leading, spacing: 4) {
+                Text("DSA Practice")
+                    .font(.system(size: 20, weight: .bold, design: .rounded))
+                    .foregroundStyle(IDETheme.textPrimary)
+                if effectiveSelectedCompanies.count == 1, let company = effectiveSelectedCompanies.first {
+                    Text("Frequently asked at \(company.rawValue)")
+                        .font(.system(size: 11, weight: .semibold))
+                        .foregroundStyle(CMTheme.companyColor(company))
+                } else {
+                    Text("\(filtered.count) of \(ProblemBank.all.count) problems")
+                        .font(.system(size: 11.5, weight: .medium))
+                        .foregroundStyle(IDETheme.textSecondary)
+                }
             }
+            Spacer()
+            Button { showsCallPanel = true } label: {
+                Image(systemName: "video.fill")
+            }
+            .buttonStyle(IDEButtonStyle(tint: call.isActive ? CMTheme.success : IDETheme.accent, prominent: call.isActive))
+            .help("Practice Together")
         }
     }
 

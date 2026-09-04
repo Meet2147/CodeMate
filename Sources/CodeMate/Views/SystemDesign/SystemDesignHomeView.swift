@@ -159,58 +159,29 @@ private struct DesignQuestionRow: View {
     }
 }
 
+private enum SystemDesignContentTab: String, CaseIterable, Identifiable {
+    case notes = "Notes"
+    case whiteboard = "Whiteboard"
+    var id: String { rawValue }
+}
+
 private struct SystemDesignDetailView: View {
     let question: SystemDesignQuestion
     var onClose: (() -> Void)?
     @State private var showAssistant = true
+    @State private var contentTab: SystemDesignContentTab = .notes
 
     var body: some View {
         VStack(spacing: 0) {
             tabBar
             HSplitView {
-                ScrollView {
-                    VStack(alignment: .leading, spacing: 14) {
-                        VStack(alignment: .leading, spacing: 8) {
-                            Text(question.title).font(.system(size: 18, weight: .bold, design: .rounded)).foregroundStyle(IDETheme.textPrimary)
-                            HStack(spacing: 6) {
-                                ForEach(question.companies) { c in
-                                    Text(c.initials).font(.system(size: 9, weight: .bold))
-                                        .padding(.horizontal, 7).padding(.vertical, 3)
-                                        .background(Capsule().fill(CMTheme.companyColor(c).opacity(0.22)))
-                                        .foregroundStyle(CMTheme.companyColor(c))
-                                }
-                                Text(question.difficulty.rawValue).font(.system(size: 10, weight: .bold)).foregroundStyle(question.difficulty.color)
-                            }
-                            Text(question.prompt).font(.system(size: 12.5)).foregroundStyle(IDETheme.textPrimary)
-                        }
-                        .ideCard()
-
-                        VStack(alignment: .leading, spacing: 8) {
-                            Text("ASK THESE FIRST").font(.system(size: 10, weight: .bold)).foregroundStyle(IDETheme.textSecondary)
-                            ForEach(question.clarifyingQuestions, id: \.self) { q in
-                                HStack(alignment: .top, spacing: 6) {
-                                    Image(systemName: "questionmark.circle").foregroundStyle(IDETheme.accent).font(.system(size: 11))
-                                    Text(q).font(.system(size: 12)).foregroundStyle(IDETheme.textPrimary)
-                                }
-                            }
-                        }
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .ideCard()
-
-                        ForEach(question.sections) { section in
-                            VStack(alignment: .leading, spacing: 8) {
-                                Text(section.heading.uppercased()).font(.system(size: 10, weight: .bold)).foregroundStyle(IDETheme.textSecondary)
-                                ForEach(section.bullets, id: \.self) { bullet in
-                                    Text("•  \(bullet)").font(.system(size: 12)).foregroundStyle(IDETheme.textPrimary)
-                                }
-                            }
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                            .ideCard()
-                        }
+                Group {
+                    if contentTab == .notes {
+                        notesContent
+                    } else {
+                        WhiteboardView(questionId: question.id)
                     }
-                    .padding(16)
                 }
-                .background(IDETheme.sidebarBackground)
                 .frame(minWidth: 320)
 
                 if showAssistant {
@@ -231,6 +202,52 @@ private struct SystemDesignDetailView: View {
                 }
             }
         }
+    }
+
+    private var notesContent: some View {
+        ScrollView {
+            VStack(alignment: .leading, spacing: 14) {
+                VStack(alignment: .leading, spacing: 8) {
+                    Text(question.title).font(.system(size: 18, weight: .bold, design: .rounded)).foregroundStyle(IDETheme.textPrimary)
+                    HStack(spacing: 6) {
+                        ForEach(question.companies) { c in
+                            Text(c.initials).font(.system(size: 9, weight: .bold))
+                                .padding(.horizontal, 7).padding(.vertical, 3)
+                                .background(Capsule().fill(CMTheme.companyColor(c).opacity(0.22)))
+                                .foregroundStyle(CMTheme.companyColor(c))
+                        }
+                        Text(question.difficulty.rawValue).font(.system(size: 10, weight: .bold)).foregroundStyle(question.difficulty.color)
+                    }
+                    Text(question.prompt).font(.system(size: 12.5)).foregroundStyle(IDETheme.textPrimary)
+                }
+                .ideCard()
+
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("ASK THESE FIRST").font(.system(size: 10, weight: .bold)).foregroundStyle(IDETheme.textSecondary)
+                    ForEach(question.clarifyingQuestions, id: \.self) { q in
+                        HStack(alignment: .top, spacing: 6) {
+                            Image(systemName: "questionmark.circle").foregroundStyle(IDETheme.accent).font(.system(size: 11))
+                            Text(q).font(.system(size: 12)).foregroundStyle(IDETheme.textPrimary)
+                        }
+                    }
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .ideCard()
+
+                ForEach(question.sections) { section in
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text(section.heading.uppercased()).font(.system(size: 10, weight: .bold)).foregroundStyle(IDETheme.textSecondary)
+                        ForEach(section.bullets, id: \.self) { bullet in
+                            Text("•  \(bullet)").font(.system(size: 12)).foregroundStyle(IDETheme.textPrimary)
+                        }
+                    }
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .ideCard()
+                }
+            }
+            .padding(16)
+        }
+        .background(IDETheme.sidebarBackground)
     }
 
     private var tabBar: some View {
@@ -256,6 +273,16 @@ private struct SystemDesignDetailView: View {
             .overlay(Rectangle().fill(IDETheme.accent).frame(height: 2), alignment: .top)
 
             Spacer()
+
+            Picker("", selection: $contentTab) {
+                ForEach(SystemDesignContentTab.allCases) { tab in
+                    Text(tab.rawValue).tag(tab)
+                }
+            }
+            .pickerStyle(.segmented)
+            .labelsHidden()
+            .frame(width: 180)
+            .padding(.trailing, 12)
         }
         .background(IDETheme.elevatedBackground)
         .overlay(Rectangle().fill(IDETheme.border).frame(height: 1), alignment: .bottom)

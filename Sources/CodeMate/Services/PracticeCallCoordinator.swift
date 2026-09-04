@@ -10,19 +10,25 @@ enum PracticeCallState: Equatable {
     case ended
 }
 
-/// Owns the lifecycle of a one-on-one SharePlay practice session for a
-/// single problem: starting/joining the GroupActivity, tracking connected
-/// participants, and relaying code updates between the two participants.
-/// Audio/video themselves are handled entirely by FaceTime once the
-/// GroupActivity is active -- CodeMate only needs to sync app state.
+/// Owns the lifecycle of a one-on-one SharePlay "practice together" session:
+/// starting/joining the GroupActivity, tracking connected participants, and
+/// relaying problem assignments + progress pings between the two
+/// participants. Audio, video (camera on/off), and screen sharing are all
+/// handled by FaceTime itself once the GroupActivity is active -- CodeMate
+/// only needs to sync its own app state on top of that call.
 ///
-/// BETA: this is real, compiling SharePlay integration, but exercising it
-/// end-to-end needs two Macs on an actual FaceTime call -- it hasn't been
-/// run against a live session in this environment.
+/// BETA: this is real, compiling SharePlay integration against a stable,
+/// non-beta framework (GroupActivities has shipped since macOS 12), but
+/// exercising it end-to-end needs two Macs on an actual FaceTime call --
+/// it hasn't been run against a live session in this environment.
 @Observable
 final class PracticeCallCoordinator {
     private(set) var state: PracticeCallState = .idle
-    private(set) var incomingCode: PracticeCallCodeUpdate?
+    /// The problem your partner assigned *you* -- this is what you solve.
+    private(set) var problemAssignedToMe: ProblemAssignment?
+    /// The problem you assigned your partner, for display ("they're solving X").
+    private(set) var problemAssignedToPartner: ProblemAssignment?
+    private(set) var partnerStatus: PracticeStatusUpdate?
     var lastError: String?
 
     private var groupSession: GroupSession<PracticeCallActivity>?
@@ -30,7 +36,8 @@ final class PracticeCallCoordinator {
     private var sessionTask: Task<Void, Never>?
     private var stateTask: Task<Void, Never>?
     private var participantsTask: Task<Void, Never>?
-    private var messageTask: Task<Void, Never>?
+    private var assignmentTask: Task<Void, Never>?
+    private var statusTask: Task<Void, Never>?
 
     init() {
         sessionTask = Task { [weak self] in
@@ -44,17 +51,25 @@ final class PracticeCallCoordinator {
         sessionTask?.cancel()
         stateTask?.cancel()
         participantsTask?.cancel()
-        messageTask?.cancel()
+        assignmentTask?.cancel()
+        statusTask?.cancel()
     }
 
-    /// Starts (or joins, if a friend already started one) a practice call
-    /// for this problem. Requires an active FaceTime call to actually share
-    /// audio/video -- SharePlay activation surfaces that prompt itself.
-    func startOrJoin(problemId: String, problemTitle: String) {
+    var isActive: Bool {
+        switch state {
+        case .waitingForFriend, .connected: return true
+        case .idle, .ended: return false
+        }
+    }
+
+    /// Starts (or joins, if a friend already started one) a practice
+    /// session. If there's no active FaceTime call yet, activation itself
+    /// prompts to start one -- that prompt is system UI, not something
+    /// CodeMate builds.
+    func start() {
         Task {
-            let activity = PracticeCallActivity(problemId: problemId, problemTitle: problemTitle)
             do {
-                _ = try await activity.activate()
+                _ = try await PracticeCallActivity().activate()
             } catch {
                 await MainActor.run { self.lastError = error.localizedDescription }
             }
@@ -66,11 +81,18 @@ final class PracticeCallCoordinator {
         teardown()
     }
 
-    func sendCodeUpdate(code: String, language: String) {
+    /// Tell your partner which problem *they* should solve.
+    func assignProblem(_ problem: Problem) {
+        let assignment = ProblemAssignment(problemId: problem.id, problemTitle: problem.title, difficulty: problem.difficulty.rawValue)
+        problemAssignedToPartner = assignment
         guard let messenger else { return }
-        Task {
-            try? await messenger.send(PracticeCallCodeUpdate(code: code, language: language))
-        }
+        Task { try? await messenger.send(assignment) }
+    }
+
+    func sendStatus(_ status: SolveStatus, attempts: Int) {
+        guard let messenger else { return }
+        let update = PracticeStatusUpdate(status: status.rawValue, attempts: attempts)
+        Task { try? await messenger.send(update) }
     }
 
     private func configure(session: GroupSession<PracticeCallActivity>) {
@@ -103,10 +125,17 @@ final class PracticeCallCoordinator {
             }
         }
 
-        messageTask?.cancel()
-        messageTask = Task { [weak self] in
-            for await (update, _) in messenger.messages(of: PracticeCallCodeUpdate.self) {
-                self?.incomingCode = update
+        assignmentTask?.cancel()
+        assignmentTask = Task { [weak self] in
+            for await (assignment, _) in messenger.messages(of: ProblemAssignment.self) {
+                self?.problemAssignedToMe = assignment
+            }
+        }
+
+        statusTask?.cancel()
+        statusTask = Task { [weak self] in
+            for await (status, _) in messenger.messages(of: PracticeStatusUpdate.self) {
+                self?.partnerStatus = status
             }
         }
 
@@ -117,7 +146,8 @@ final class PracticeCallCoordinator {
         state = .ended
         stateTask?.cancel()
         participantsTask?.cancel()
-        messageTask?.cancel()
+        assignmentTask?.cancel()
+        statusTask?.cancel()
         groupSession = nil
         messenger = nil
     }

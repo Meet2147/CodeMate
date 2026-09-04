@@ -5,6 +5,7 @@ import SwiftData
 struct CodeMateApp: App {
     @State private var preferences = AppPreferences()
     @State private var licenseManager = LicenseManager()
+    @State private var practiceCall = PracticeCallCoordinator()
     // StoreManager is kept in the project but left unwired for now -- it's
     // only meaningful for a Mac App Store-distributed build (StoreKit needs
     // an App Store receipt). This build is sold directly, so LicenseManager
@@ -12,7 +13,7 @@ struct CodeMateApp: App {
     // Paywall/gating to it) if/when there's a separate App Store SKU.
 
     var sharedModelContainer: ModelContainer = {
-        let schema = Schema([ProblemProgress.self])
+        let schema = Schema([ProblemProgress.self, WhiteboardDocument.self])
         let config = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
         do {
             return try ModelContainer(for: schema, configurations: [config])
@@ -27,6 +28,7 @@ struct CodeMateApp: App {
                 .frame(minWidth: 1040, minHeight: 720)
                 .environment(preferences)
                 .environment(licenseManager)
+                .environment(practiceCall)
         }
         .modelContainer(sharedModelContainer)
         .windowResizability(.automatic)

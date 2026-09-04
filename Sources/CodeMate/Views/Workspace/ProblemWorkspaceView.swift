@@ -3,6 +3,7 @@ import SwiftData
 
 struct ProblemWorkspaceView: View {
     @Environment(\.modelContext) private var modelContext
+    @Environment(PracticeCallCoordinator.self) private var call
     @Query private var allProgress: [ProblemProgress]
 
     let problem: Problem
@@ -291,6 +292,9 @@ struct ProblemWorkspaceView: View {
                     isRunning = false
                     if result.exitCode == 0 { persist { $0.status = .solved; $0.attempts += 1 } }
                     else { persist { $0.attempts += 1 } }
+                    if call.isActive {
+                        call.sendStatus(progress?.status ?? .inProgress, attempts: progress?.attempts ?? 0)
+                    }
                 }
             } catch {
                 await MainActor.run {
