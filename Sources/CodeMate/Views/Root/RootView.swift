@@ -18,16 +18,23 @@ enum AppSection: String, CaseIterable, Identifiable {
 struct RootView: View {
     @Environment(\.colorScheme) private var scheme
     @Environment(AppPreferences.self) private var prefs
-    @Environment(AuthManager.self) private var auth
     @State private var section: AppSection = .practice
     @State private var showsSettings = false
 
+    // Sign in with Apple/Google (AuthGateView, AuthManager) is intentionally
+    // not gating the app right now -- a redeemed license key alone is
+    // enough to know who's paid and gate features, and it's what Polar's
+    // checkout already tracks by email. Login mainly buys cross-device
+    // progress sync, which isn't needed yet; it also needs real Apple
+    // Developer Portal + Google Cloud OAuth setup that hasn't been done
+    // (an ad-hoc-signed build with the Sign-in-with-Apple entitlement gets
+    // killed outright by macOS, confirmed while building this). The auth
+    // code is kept in the project, just not wired into this flow -- re-add
+    // `if !auth.isSignedIn { AuthGateView() }` above once that setup is done
+    // and an account layer is actually wanted.
     var body: some View {
         Group {
-            if !auth.isSignedIn {
-                AuthGateView()
-                    .transition(.opacity)
-            } else if prefs.hasOnboarded {
+            if prefs.hasOnboarded {
                 mainView
                     .transition(.opacity)
             } else {
@@ -35,7 +42,6 @@ struct RootView: View {
                     .transition(.opacity)
             }
         }
-        .animation(.easeInOut(duration: 0.3), value: auth.isSignedIn)
         .animation(.easeInOut(duration: 0.3), value: prefs.hasOnboarded)
     }
 

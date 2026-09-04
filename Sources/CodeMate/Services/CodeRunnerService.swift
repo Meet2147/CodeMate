@@ -4,6 +4,15 @@ struct RunResult {
     var output: String
     var exitCode: Int32
     var durationMs: Int
+    /// Present only when the problem has a TestHarness and the harness
+    /// actually ran (didn't crash before printing its start marker). When
+    /// present, this -- not just `exitCode` -- is what "solved" means.
+    var testOutcomes: [TestOutcome]?
+
+    var allTestsPassed: Bool? {
+        guard let testOutcomes, !testOutcomes.isEmpty else { return nil }
+        return testOutcomes.allSatisfy(\.passed)
+    }
 }
 
 enum RunnerError: LocalizedError {
@@ -20,15 +29,29 @@ enum RunnerError: LocalizedError {
     }
 }
 
-/// Executes the student's own code locally via the system toolchain, purely
-/// for quick sanity-checking against the examples on this machine. This is
+/// Executes the student's own code locally via the system toolchain. This is
 /// intentionally NOT a sandboxed judge -- it runs with the current user's
 /// permissions, exactly like running the same file from Terminal would.
 /// A production "Run against hidden tests" feature should instead go
 /// through a server-side sandboxed executor.
+///
+/// When the problem carries a `TestHarness` (see Models/TestCase.swift),
+/// generated driver code is appended that calls the student's function
+/// against real test cases and reports pass/fail -- otherwise this only
+/// checks that the code compiled and ran without crashing, which is NOT
+/// the same as being correct (empty starter code exits 0 too). Problems
+/// without a harness yet fall back to that weaker "ran without crashing"
+/// signal; see ProblemBank.swift for which problems currently have one.
 actor CodeRunnerService {
-    func run(code: String, language: ProgrammingLanguage) async throws -> RunResult {
+    func run(code: String, language: ProgrammingLanguage, harness: TestHarness? = nil) async throws -> RunResult {
         guard language.isLocallyRunnable else { throw RunnerError.unsupportedLanguage(language) }
+
+        let sourceToRun: String
+        if let harness {
+            sourceToRun = TestHarnessGenerator.appendDriver(to: code, harness: harness, language: language)
+        } else {
+            sourceToRun = code
+        }
 
         let tmpDir = FileManager.default.temporaryDirectory
             .appendingPathComponent("CodeMateRun-\(UUID().uuidString)", isDirectory: true)
@@ -36,7 +59,7 @@ actor CodeRunnerService {
         defer { try? FileManager.default.removeItem(at: tmpDir) }
 
         let fileURL = tmpDir.appendingPathComponent("main.\(language.fileExtension)")
-        try code.write(to: fileURL, atomically: true, encoding: .utf8)
+        try sourceToRun.write(to: fileURL, atomically: true, encoding: .utf8)
 
         let (executable, arguments) = try launchCommand(for: language, fileURL: fileURL)
         guard FileManager.default.isExecutableFile(atPath: executable) else {
@@ -64,9 +87,18 @@ actor CodeRunnerService {
             combined += (combined.isEmpty ? "" : "\n") + errText
         }
 
+        if let harness {
+            let (preamble, outcomes) = TestHarnessGenerator.parseOutput(combined, expectedCount: harness.cases.count)
+            return RunResult(output: preamble.isEmpty ? "(no output)" : preamble,
+                              exitCode: process.terminationStatus,
+                              durationMs: duration,
+                              testOutcomes: outcomes.isEmpty ? nil : outcomes)
+        }
+
         return RunResult(output: combined.isEmpty ? "(no output)" : combined,
                           exitCode: process.terminationStatus,
-                          durationMs: duration)
+                          durationMs: duration,
+                          testOutcomes: nil)
     }
 
     private func launchCommand(for language: ProgrammingLanguage, fileURL: URL) throws -> (String, [String]) {

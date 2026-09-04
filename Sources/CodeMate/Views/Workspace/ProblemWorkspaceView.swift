@@ -112,7 +112,11 @@ struct ProblemWorkspaceView: View {
             if isRunning {
                 HStack(spacing: 4) { ProgressView().controlSize(.mini); Text("Running…") }
             } else if let result = runResult {
-                Text(result.exitCode == 0 ? "Exit 0 · \(result.durationMs)ms" : "Exit \(result.exitCode) · \(result.durationMs)ms")
+                if let outcomes = result.testOutcomes {
+                    Text("\(outcomes.filter(\.passed).count)/\(outcomes.count) tests passed · \(result.durationMs)ms")
+                } else {
+                    Text(result.exitCode == 0 ? "Exit 0 · \(result.durationMs)ms" : "Exit \(result.exitCode) · \(result.durationMs)ms")
+                }
             }
         }
         .font(.system(size: 10.5, weight: .medium))
@@ -260,20 +264,57 @@ struct ProblemWorkspaceView: View {
     private var outputPane: some View {
         VStack(alignment: .leading, spacing: 6) {
             HStack {
-                Text("OUTPUT").font(.system(size: 10, weight: .bold)).foregroundStyle(IDETheme.textSecondary)
+                Text(runResult?.testOutcomes != nil ? "TEST RESULTS" : "OUTPUT")
+                    .font(.system(size: 10, weight: .bold)).foregroundStyle(IDETheme.textSecondary)
                 Spacer()
                 if let result = runResult {
-                    Text(result.exitCode == 0 ? "Exit 0 · \(result.durationMs)ms" : "Exit \(result.exitCode) · \(result.durationMs)ms")
-                        .font(.system(size: 10, weight: .semibold))
-                        .foregroundStyle(result.exitCode == 0 ? CMTheme.success : CMTheme.danger)
+                    if let passed = result.allTestsPassed, let outcomes = result.testOutcomes {
+                        Text("\(outcomes.filter(\.passed).count)/\(outcomes.count) passed · \(result.durationMs)ms")
+                            .font(.system(size: 10, weight: .semibold))
+                            .foregroundStyle(passed ? CMTheme.success : CMTheme.danger)
+                    } else {
+                        Text(result.exitCode == 0 ? "Exit 0 · \(result.durationMs)ms" : "Exit \(result.exitCode) · \(result.durationMs)ms")
+                            .font(.system(size: 10, weight: .semibold))
+                            .foregroundStyle(result.exitCode == 0 ? CMTheme.success : CMTheme.danger)
+                    }
                 }
             }
             ScrollView {
-                Text(runError ?? runResult?.output ?? (language.isLocallyRunnable ? "Run your code to see output here." : "\(language.rawValue) runs via an external judge -- local execution isn't wired up for it yet."))
-                    .font(.system(size: 12, design: .monospaced))
-                    .foregroundStyle(runError != nil ? CMTheme.danger : IDETheme.textPrimary)
+                if let outcomes = runResult?.testOutcomes {
+                    VStack(alignment: .leading, spacing: 8) {
+                        ForEach(outcomes) { outcome in
+                            HStack(alignment: .top, spacing: 6) {
+                                Image(systemName: outcome.passed ? "checkmark.circle.fill" : "xmark.circle.fill")
+                                    .font(.system(size: 11))
+                                    .foregroundStyle(outcome.passed ? CMTheme.success : CMTheme.danger)
+                                VStack(alignment: .leading, spacing: 2) {
+                                    Text("Test \(outcome.index)")
+                                        .font(.system(size: 11.5, weight: .semibold, design: .monospaced))
+                                        .foregroundStyle(IDETheme.textPrimary)
+                                    if let detail = outcome.detail {
+                                        Text(detail)
+                                            .font(.system(size: 11, design: .monospaced))
+                                            .foregroundStyle(CMTheme.danger)
+                                    }
+                                }
+                            }
+                        }
+                        if let preamble = runResult?.output, preamble != "(no output)", !preamble.isEmpty {
+                            Divider().padding(.vertical, 2)
+                            Text(preamble)
+                                .font(.system(size: 11, design: .monospaced))
+                                .foregroundStyle(IDETheme.textSecondary)
+                        }
+                    }
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .textSelection(.enabled)
+                } else {
+                    Text(runError ?? runResult?.output ?? (language.isLocallyRunnable ? "Run your code to see output here." : "\(language.rawValue) runs via an external judge -- local execution isn't wired up for it yet."))
+                        .font(.system(size: 12, design: .monospaced))
+                        .foregroundStyle(runError != nil ? CMTheme.danger : IDETheme.textPrimary)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .textSelection(.enabled)
+                }
             }
         }
         .padding(10)
@@ -286,13 +327,17 @@ struct ProblemWorkspaceView: View {
         runError = nil
         Task {
             do {
-                let result = try await runner.run(code: code, language: language)
+                let result = try await runner.run(code: code, language: language, harness: problem.testHarness)
                 await MainActor.run {
                     runResult = result
                     isRunning = false
-                    if result.exitCode == 0 { persist { $0.status = .solved; $0.attempts += 1 } }
+                    // A harness's real pass/fail is authoritative when present; for
+                    // problems without one yet, fall back to "ran without crashing"
+                    // -- weaker, but the only signal available for those problems.
+                    let solved = result.allTestsPassed ?? (result.exitCode == 0)
+                    if solved { persist { $0.status = .solved; $0.attempts += 1 } }
                     else { persist { $0.attempts += 1 } }
-                    ActivityTracker.recordRun(solved: result.exitCode == 0, in: modelContext)
+                    ActivityTracker.recordRun(solved: solved, in: modelContext)
                     if call.isActive {
                         call.sendStatus(progress?.status ?? .inProgress, attempts: progress?.attempts ?? 0)
                     }

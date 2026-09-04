@@ -33,6 +33,10 @@ struct Problem: Identifiable, Codable, Hashable {
     var approaches: [Approach]
     var starterCode: [ProgrammingLanguage: String]
     var followUp: String?     // e.g. "Could you solve this in O(1) space?"
+    /// When present, Run actually grades the solution against real test
+    /// cases instead of just checking the code didn't crash. nil for
+    /// problems not yet wired up with structured tests (see TestHarness).
+    var testHarness: TestHarness? = nil
 
     var estimatedMinutes: Int {
         switch difficulty {

@@ -43,7 +43,15 @@ enum ProblemBank {
                 .swift: "func twoSum(_ nums: [Int], _ target: Int) -> [Int] {\n    // Write your solution here\n    return []\n}\n",
                 .python: "def two_sum(nums: list[int], target: int) -> list[int]:\n    # Write your solution here\n    return []\n"
             ],
-            followUp: "Could you do it in one pass without a second lookup loop?"
+            followUp: "Could you do it in one pass without a second lookup loop?",
+            testHarness: TestHarness(
+                signature: FunctionSignature(swiftName: "twoSum", pythonName: "two_sum"),
+                cases: [
+                    StructuredTestCase(inputs: [.array([.int(2), .int(7), .int(11), .int(15)]), .int(9)], expected: .array([.int(0), .int(1)])),
+                    StructuredTestCase(inputs: [.array([.int(3), .int(2), .int(4)]), .int(6)], expected: .array([.int(1), .int(2)])),
+                    StructuredTestCase(inputs: [.array([.int(3), .int(3)]), .int(6)], expected: .array([.int(0), .int(1)]))
+                ]
+            )
         ),
 
         Problem(
@@ -77,7 +85,16 @@ enum ProblemBank {
                 .swift: "func isValid(_ s: String) -> Bool {\n    // Write your solution here\n    return false\n}\n",
                 .python: "def is_valid(s: str) -> bool:\n    # Write your solution here\n    return False\n"
             ],
-            followUp: nil
+            followUp: nil,
+            testHarness: TestHarness(
+                signature: FunctionSignature(swiftName: "isValid", pythonName: "is_valid"),
+                cases: [
+                    StructuredTestCase(inputs: [.string("()")], expected: .bool(true)),
+                    StructuredTestCase(inputs: [.string("()[]{}")], expected: .bool(true)),
+                    StructuredTestCase(inputs: [.string("(]")], expected: .bool(false)),
+                    StructuredTestCase(inputs: [.string("([)]")], expected: .bool(false))
+                ]
+            )
         ),
 
         Problem(
@@ -116,7 +133,14 @@ enum ProblemBank {
                 .swift: "func maxProfit(_ prices: [Int]) -> Int {\n    // Write your solution here\n    return 0\n}\n",
                 .python: "def max_profit(prices: list[int]) -> int:\n    # Write your solution here\n    return 0\n"
             ],
-            followUp: "What changes if you're allowed unlimited buy/sell transactions?"
+            followUp: "What changes if you're allowed unlimited buy/sell transactions?",
+            testHarness: TestHarness(
+                signature: FunctionSignature(swiftName: "maxProfit", pythonName: "max_profit"),
+                cases: [
+                    StructuredTestCase(inputs: [.array([.int(7), .int(1), .int(5), .int(3), .int(6), .int(4)])], expected: .int(5)),
+                    StructuredTestCase(inputs: [.array([.int(7), .int(6), .int(4), .int(3), .int(1)])], expected: .int(0))
+                ]
+            )
         ),
 
         Problem(
@@ -380,7 +404,15 @@ enum ProblemBank {
                 .swift: "func climbStairs(_ n: Int) -> Int {\n    // Write your solution here\n    return 0\n}\n",
                 .python: "def climb_stairs(n: int) -> int:\n    # Write your solution here\n    return 0\n"
             ],
-            followUp: "What if a move can also be 3 steps? Does the O(1)-space trick still work?"
+            followUp: "What if a move can also be 3 steps? Does the O(1)-space trick still work?",
+            testHarness: TestHarness(
+                signature: FunctionSignature(swiftName: "climbStairs", pythonName: "climb_stairs"),
+                cases: [
+                    StructuredTestCase(inputs: [.int(2)], expected: .int(2)),
+                    StructuredTestCase(inputs: [.int(3)], expected: .int(3)),
+                    StructuredTestCase(inputs: [.int(5)], expected: .int(8))
+                ]
+            )
         ),
 
         Problem(
@@ -416,7 +448,15 @@ enum ProblemBank {
                 .swift: "func coinChange(_ coins: [Int], _ amount: Int) -> Int {\n    // Write your solution here\n    return -1\n}\n",
                 .python: "def coin_change(coins: list[int], amount: int) -> int:\n    # Write your solution here\n    return -1\n"
             ],
-            followUp: "Can you also return *which* coins were used, not just the count?"
+            followUp: "Can you also return *which* coins were used, not just the count?",
+            testHarness: TestHarness(
+                signature: FunctionSignature(swiftName: "coinChange", pythonName: "coin_change"),
+                cases: [
+                    StructuredTestCase(inputs: [.array([.int(1), .int(2), .int(5)]), .int(11)], expected: .int(3)),
+                    StructuredTestCase(inputs: [.array([.int(2)]), .int(3)], expected: .int(-1)),
+                    StructuredTestCase(inputs: [.array([.int(1)]), .int(0)], expected: .int(0))
+                ]
+            )
         ),
 
         Problem(
@@ -628,7 +668,14 @@ enum ProblemBank {
                 .swift: "func productExceptSelf(_ nums: [Int]) -> [Int] {\n    // Write your solution here\n    return []\n}\n",
                 .python: "def product_except_self(nums: list[int]) -> list[int]:\n    # Write your solution here\n    return []\n"
             ],
-            followUp: nil
+            followUp: nil,
+            testHarness: TestHarness(
+                signature: FunctionSignature(swiftName: "productExceptSelf", pythonName: "product_except_self"),
+                cases: [
+                    StructuredTestCase(inputs: [.array([.int(1), .int(2), .int(3), .int(4)])], expected: .array([.int(24), .int(12), .int(8), .int(6)])),
+                    StructuredTestCase(inputs: [.array([.int(-1), .int(1), .int(0), .int(-3), .int(3)])], expected: .array([.int(0), .int(0), .int(9), .int(0), .int(0)]))
+                ]
+            )
         ),
 
         Problem(
@@ -734,7 +781,15 @@ enum ProblemBank {
                 .swift: "func maxSubArray(_ nums: [Int]) -> Int {\n    // Write your solution here\n    return 0\n}\n",
                 .python: "def max_sub_array(nums: list[int]) -> int:\n    # Write your solution here\n    return 0\n"
             ],
-            followUp: "Can you also return the actual subarray, not just its sum?"
+            followUp: "Can you also return the actual subarray, not just its sum?",
+            testHarness: TestHarness(
+                signature: FunctionSignature(swiftName: "maxSubArray", pythonName: "max_sub_array"),
+                cases: [
+                    StructuredTestCase(inputs: [.array([.int(-2), .int(1), .int(-3), .int(4), .int(-1), .int(2), .int(1), .int(-5), .int(4)])], expected: .int(6)),
+                    StructuredTestCase(inputs: [.array([.int(1)])], expected: .int(1)),
+                    StructuredTestCase(inputs: [.array([.int(5), .int(4), .int(-1), .int(7), .int(8)])], expected: .int(23))
+                ]
+            )
         ),
 
         Problem(
@@ -905,7 +960,14 @@ enum ProblemBank {
                 .swift: "func containsDuplicate(_ nums: [Int]) -> Bool {\n    // Write your solution here\n    return false\n}\n",
                 .python: "def contains_duplicate(nums: list[int]) -> bool:\n    # Write your solution here\n    return False\n"
             ],
-            followUp: nil
+            followUp: nil,
+            testHarness: TestHarness(
+                signature: FunctionSignature(swiftName: "containsDuplicate", pythonName: "contains_duplicate"),
+                cases: [
+                    StructuredTestCase(inputs: [.array([.int(1), .int(2), .int(3), .int(1)])], expected: .bool(true)),
+                    StructuredTestCase(inputs: [.array([.int(1), .int(2), .int(3), .int(4)])], expected: .bool(false))
+                ]
+            )
         ),
 
         Problem(
@@ -939,7 +1001,14 @@ enum ProblemBank {
                 .swift: "func isAnagram(_ s: String, _ t: String) -> Bool {\n    // Write your solution here\n    return false\n}\n",
                 .python: "def is_anagram(s: str, t: str) -> bool:\n    # Write your solution here\n    return False\n"
             ],
-            followUp: "What if the input contains Unicode characters instead of just lowercase English letters?"
+            followUp: "What if the input contains Unicode characters instead of just lowercase English letters?",
+            testHarness: TestHarness(
+                signature: FunctionSignature(swiftName: "isAnagram", pythonName: "is_anagram"),
+                cases: [
+                    StructuredTestCase(inputs: [.string("anagram"), .string("nagaram")], expected: .bool(true)),
+                    StructuredTestCase(inputs: [.string("rat"), .string("car")], expected: .bool(false))
+                ]
+            )
         ),
 
         Problem(
@@ -971,7 +1040,15 @@ enum ProblemBank {
                 .swift: "func missingNumber(_ nums: [Int]) -> Int {\n    // Write your solution here\n    return 0\n}\n",
                 .python: "def missing_number(nums: list[int]) -> int:\n    # Write your solution here\n    return 0\n"
             ],
-            followUp: nil
+            followUp: nil,
+            testHarness: TestHarness(
+                signature: FunctionSignature(swiftName: "missingNumber", pythonName: "missing_number"),
+                cases: [
+                    StructuredTestCase(inputs: [.array([.int(3), .int(0), .int(1)])], expected: .int(2)),
+                    StructuredTestCase(inputs: [.array([.int(0), .int(1)])], expected: .int(2)),
+                    StructuredTestCase(inputs: [.array([.int(9), .int(6), .int(4), .int(2), .int(3), .int(5), .int(7), .int(0), .int(1)])], expected: .int(8))
+                ]
+            )
         ),
 
         Problem(
@@ -999,7 +1076,14 @@ enum ProblemBank {
                 .swift: "func singleNumber(_ nums: [Int]) -> Int {\n    // Write your solution here\n    return 0\n}\n",
                 .python: "def single_number(nums: list[int]) -> int:\n    # Write your solution here\n    return 0\n"
             ],
-            followUp: "What if every other element appears three times instead of twice?"
+            followUp: "What if every other element appears three times instead of twice?",
+            testHarness: TestHarness(
+                signature: FunctionSignature(swiftName: "singleNumber", pythonName: "single_number"),
+                cases: [
+                    StructuredTestCase(inputs: [.array([.int(2), .int(2), .int(1)])], expected: .int(1)),
+                    StructuredTestCase(inputs: [.array([.int(4), .int(1), .int(2), .int(1), .int(2)])], expected: .int(4))
+                ]
+            )
         ),
 
         Problem(
@@ -1033,7 +1117,14 @@ enum ProblemBank {
                 .swift: "func majorityElement(_ nums: [Int]) -> Int {\n    // Write your solution here\n    return 0\n}\n",
                 .python: "def majority_element(nums: list[int]) -> int:\n    # Write your solution here\n    return 0\n"
             ],
-            followUp: nil
+            followUp: nil,
+            testHarness: TestHarness(
+                signature: FunctionSignature(swiftName: "majorityElement", pythonName: "majority_element"),
+                cases: [
+                    StructuredTestCase(inputs: [.array([.int(3), .int(2), .int(3)])], expected: .int(3)),
+                    StructuredTestCase(inputs: [.array([.int(2), .int(2), .int(1), .int(1), .int(1), .int(2), .int(2)])], expected: .int(2))
+                ]
+            )
         ),
 
         Problem(
@@ -1063,7 +1154,14 @@ enum ProblemBank {
                 .swift: "func moveZeroes(_ nums: inout [Int]) {\n    // Write your solution here\n}\n",
                 .python: "def move_zeroes(nums: list[int]) -> None:\n    # Write your solution here, modify nums in place\n    pass\n"
             ],
-            followUp: nil
+            followUp: nil,
+            testHarness: TestHarness(
+                signature: FunctionSignature(swiftName: "moveZeroes", pythonName: "move_zeroes", inoutParamIndex: 0),
+                cases: [
+                    StructuredTestCase(inputs: [.array([.int(0), .int(1), .int(0), .int(3), .int(12)])], expected: .array([.int(1), .int(3), .int(12), .int(0), .int(0)])),
+                    StructuredTestCase(inputs: [.array([.int(0), .int(0), .int(1)])], expected: .array([.int(1), .int(0), .int(0)]))
+                ]
+            )
         ),
 
         Problem(
@@ -1251,7 +1349,16 @@ enum ProblemBank {
                 .swift: "func searchInsert(_ nums: [Int], _ target: Int) -> Int {\n    // Write your solution here\n    return 0\n}\n",
                 .python: "def search_insert(nums: list[int], target: int) -> int:\n    # Write your solution here\n    return 0\n"
             ],
-            followUp: nil
+            followUp: nil,
+            testHarness: TestHarness(
+                signature: FunctionSignature(swiftName: "searchInsert", pythonName: "search_insert"),
+                cases: [
+                    StructuredTestCase(inputs: [.array([.int(1), .int(3), .int(5), .int(6)]), .int(5)], expected: .int(2)),
+                    StructuredTestCase(inputs: [.array([.int(1), .int(3), .int(5), .int(6)]), .int(2)], expected: .int(1)),
+                    StructuredTestCase(inputs: [.array([.int(1), .int(3), .int(5), .int(6)]), .int(7)], expected: .int(4)),
+                    StructuredTestCase(inputs: [.array([.int(1), .int(3), .int(5), .int(6)]), .int(0)], expected: .int(0))
+                ]
+            )
         ),
 
         Problem(
@@ -2580,7 +2687,15 @@ enum ProblemBank {
                 .swift: "func mySqrt(_ x: Int) -> Int {\n    // Write your solution here\n    return 0\n}\n",
                 .python: "def my_sqrt(x: int) -> int:\n    # Write your solution here\n    return 0\n"
             ],
-            followUp: nil
+            followUp: nil,
+            testHarness: TestHarness(
+                signature: FunctionSignature(swiftName: "mySqrt", pythonName: "my_sqrt"),
+                cases: [
+                    StructuredTestCase(inputs: [.int(4)], expected: .int(2)),
+                    StructuredTestCase(inputs: [.int(8)], expected: .int(2)),
+                    StructuredTestCase(inputs: [.int(0)], expected: .int(0))
+                ]
+            )
         ),
 
         Problem(
@@ -2639,7 +2754,14 @@ enum ProblemBank {
                 .swift: "func rob(_ nums: [Int]) -> Int {\n    // Write your solution here\n    return 0\n}\n",
                 .python: "def rob(nums: list[int]) -> int:\n    # Write your solution here\n    return 0\n"
             ],
-            followUp: "What if the houses are arranged in a circle (first and last are adjacent)?"
+            followUp: "What if the houses are arranged in a circle (first and last are adjacent)?",
+            testHarness: TestHarness(
+                signature: FunctionSignature(swiftName: "rob", pythonName: "rob"),
+                cases: [
+                    StructuredTestCase(inputs: [.array([.int(1), .int(2), .int(3), .int(1)])], expected: .int(4)),
+                    StructuredTestCase(inputs: [.array([.int(2), .int(7), .int(9), .int(3), .int(1)])], expected: .int(12))
+                ]
+            )
         ),
 
         Problem(
