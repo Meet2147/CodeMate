@@ -5,6 +5,7 @@ struct SettingsView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(AppPreferences.self) private var prefs
     @Environment(LicenseManager.self) private var licenseManager
+    @Environment(AuthManager.self) private var auth
     @State private var apiKey: String = KeychainService.loadAPIKey() ?? ""
     @State private var savedConfirmation = false
     @State private var showsCompanyPicker = false
@@ -34,6 +35,37 @@ struct SettingsView: View {
                 Spacer()
                 Button("Done") { dismiss() }
                     .buttonStyle(NeumorphicButtonStyle(prominent: true))
+            }
+
+            if let user = auth.currentUser {
+                HStack(spacing: 12) {
+                    Image(systemName: user.provider == .apple ? "applelogo" : "g.circle.fill")
+                        .font(.system(size: 18))
+                        .foregroundStyle(CMTheme.textPrimary(scheme))
+                        .frame(width: 32, height: 32)
+                        .background(Circle().fill(CMTheme.shadowDark(scheme).opacity(0.2)))
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(user.displayName?.isEmpty == false ? user.displayName! : (user.email ?? "Signed in"))
+                            .font(.system(size: 13, weight: .semibold))
+                            .foregroundStyle(CMTheme.textPrimary(scheme))
+                        HStack(spacing: 4) {
+                            Text(user.email ?? "")
+                                .font(.system(size: 10.5))
+                                .foregroundStyle(CMTheme.textSecondary(scheme))
+                            if DeveloperAccess.isDeveloper(email: user.email) {
+                                Text("DEVELOPER")
+                                    .font(.system(size: 8, weight: .bold))
+                                    .padding(.horizontal, 5).padding(.vertical, 2)
+                                    .background(Capsule().fill(CMTheme.warning.opacity(0.25)))
+                                    .foregroundStyle(CMTheme.warning)
+                            }
+                        }
+                    }
+                    Spacer()
+                    Button("Sign Out") { auth.signOut() }
+                        .buttonStyle(NeumorphicButtonStyle(tint: CMTheme.danger))
+                }
+                .neumorphicRaised(padding: 12)
             }
 
             HStack(spacing: 12) {

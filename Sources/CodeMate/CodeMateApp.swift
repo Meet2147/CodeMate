@@ -6,6 +6,7 @@ struct CodeMateApp: App {
     @State private var preferences = AppPreferences()
     @State private var licenseManager = LicenseManager()
     @State private var practiceCall = PracticeCallCoordinator()
+    @State private var auth = AuthManager()
     // StoreManager is kept in the project but left unwired for now -- it's
     // only meaningful for a Mac App Store-distributed build (StoreKit needs
     // an App Store receipt). This build is sold directly, so LicenseManager
@@ -13,7 +14,7 @@ struct CodeMateApp: App {
     // Paywall/gating to it) if/when there's a separate App Store SKU.
 
     var sharedModelContainer: ModelContainer = {
-        let schema = Schema([ProblemProgress.self, WhiteboardDocument.self])
+        let schema = Schema([ProblemProgress.self, WhiteboardDocument.self, DailyActivity.self])
         let config = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
         do {
             return try ModelContainer(for: schema, configurations: [config])
@@ -29,6 +30,13 @@ struct CodeMateApp: App {
                 .environment(preferences)
                 .environment(licenseManager)
                 .environment(practiceCall)
+                .environment(auth)
+                .onChange(of: auth.currentUser) { _, newUser in
+                    licenseManager.accountEmail = newUser?.email
+                }
+                .task {
+                    licenseManager.accountEmail = auth.currentUser?.email
+                }
         }
         .modelContainer(sharedModelContainer)
         .windowResizability(.automatic)
@@ -40,9 +48,10 @@ struct CodeMateApp: App {
 
         Settings {
             SettingsView()
-                .frame(width: 520, height: 660)
+                .frame(width: 520, height: 720)
                 .environment(preferences)
                 .environment(licenseManager)
+                .environment(auth)
         }
     }
 }

@@ -15,6 +15,7 @@ struct PaywallView: View {
     @State private var billing: SubscriptionPlan.BillingPeriod = .monthly
     @State private var licenseKeyDraft: String = ""
     @State private var redeemedConfirmation = false
+    @State private var isRedeeming = false
 
     var body: some View {
         VStack(spacing: 0) {
@@ -197,15 +198,22 @@ struct PaywallView: View {
                     .textFieldStyle(.plain)
                     .font(.system(size: 12, design: .monospaced))
                     .neumorphicInset(padding: 10)
-                Button("Redeem") {
-                    if licenseManager.redeem(key: licenseKeyDraft) {
-                        redeemedConfirmation = true
-                        licenseKeyDraft = ""
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 2.5) { redeemedConfirmation = false }
+                Button {
+                    isRedeeming = true
+                    Task {
+                        let ok = await licenseManager.redeem(key: licenseKeyDraft)
+                        isRedeeming = false
+                        if ok {
+                            redeemedConfirmation = true
+                            licenseKeyDraft = ""
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 2.5) { redeemedConfirmation = false }
+                        }
                     }
+                } label: {
+                    if isRedeeming { ProgressView().controlSize(.small) } else { Text("Redeem") }
                 }
                 .buttonStyle(NeumorphicButtonStyle(prominent: true))
-                .disabled(licenseKeyDraft.trimmingCharacters(in: .whitespaces).isEmpty)
+                .disabled(licenseKeyDraft.trimmingCharacters(in: .whitespaces).isEmpty || isRedeeming)
             }
 
             if redeemedConfirmation {

@@ -292,6 +292,7 @@ struct ProblemWorkspaceView: View {
                     isRunning = false
                     if result.exitCode == 0 { persist { $0.status = .solved; $0.attempts += 1 } }
                     else { persist { $0.attempts += 1 } }
+                    ActivityTracker.recordRun(solved: result.exitCode == 0, in: modelContext)
                     if call.isActive {
                         call.sendStatus(progress?.status ?? .inProgress, attempts: progress?.attempts ?? 0)
                     }

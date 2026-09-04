@@ -18,15 +18,25 @@ enum AppSection: String, CaseIterable, Identifiable {
 struct RootView: View {
     @Environment(\.colorScheme) private var scheme
     @Environment(AppPreferences.self) private var prefs
+    @Environment(AuthManager.self) private var auth
     @State private var section: AppSection? = .practice
     @State private var showsSettings = false
 
     var body: some View {
-        if prefs.hasOnboarded {
-            mainView
-        } else {
-            OnboardingView()
+        Group {
+            if !auth.isSignedIn {
+                AuthGateView()
+                    .transition(.opacity)
+            } else if prefs.hasOnboarded {
+                mainView
+                    .transition(.opacity)
+            } else {
+                OnboardingView()
+                    .transition(.opacity)
+            }
         }
+        .animation(.easeInOut(duration: 0.3), value: auth.isSignedIn)
+        .animation(.easeInOut(duration: 0.3), value: prefs.hasOnboarded)
     }
 
     private var mainView: some View {
@@ -66,7 +76,7 @@ struct RootView: View {
         .navigationSplitViewStyle(.balanced)
         .sheet(isPresented: $showsSettings) {
             SettingsView()
-                .frame(width: 520, height: 660)
+                .frame(width: 520, height: 720)
         }
     }
 }

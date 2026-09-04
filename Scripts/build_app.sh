@@ -42,9 +42,38 @@ cat > "$APP/Contents/Info.plist" <<'PLIST_EOF'
     <true/>
     <key>LSApplicationCategoryType</key>
     <string>public.app-category.education</string>
+    <key>CFBundleURLTypes</key>
+    <array>
+        <dict>
+            <key>CFBundleURLName</key>
+            <string>com.codemate.app.oauth</string>
+            <key>CFBundleURLSchemes</key>
+            <array>
+                <string>codemate</string>
+            </array>
+        </dict>
+    </array>
 </dict>
 </plist>
 PLIST_EOF
+
+# Plain ad-hoc signing (no real certificate, no hardened runtime) -- fine
+# for local testing of everything EXCEPT Sign in with Apple. Do not add
+# --options runtime / --entitlements here: macOS's code-integrity checks
+# (AMFI) outright SIGKILL an ad-hoc-signed process at launch if it claims
+# the com.apple.developer.applesignin entitlement without a real Apple-
+# issued signing chain to back it up -- confirmed while building this (exit
+# 137). That entitlement only belongs in Scripts/notarize.sh's real,
+# Developer-ID-signed build.
+#
+# To test Sign in with Apple before you've done Apple Developer Portal
+# setup + gotten a Developer ID certificate: open Package.swift in Xcode
+# and run from there instead. Xcode can provision a development
+# certificate + entitlement automatically while you're signed into your
+# Apple ID in Xcode's own settings, which this shell script can't
+# replicate. Google sign-in needs a real OAuth client ID either way
+# (AuthManager.swift) regardless of how you build.
+codesign --force --deep --sign - "$APP" 2>/dev/null || true
 
 echo "Built $APP"
 echo "Launch with: open $APP"
