@@ -1,0 +1,9 @@
+services:
+  - name: codemate-site
+    type: web
+    runtime: static
+    staticPublishPath: ./Site
+    headers:
+      - path: /*
+        name: Cache-Control
+        value: public, max-age=3600
