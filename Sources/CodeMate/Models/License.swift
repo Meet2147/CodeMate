@@ -31,11 +31,14 @@ struct License: Codable, Equatable {
 /// fully prevent that. That's an accepted, common trade-off for indie
 /// Mac software sold outside the App Store; it isn't trying to be DRM.
 enum LicenseCodec {
-    /// Replace with your own secret before shipping -- anyone with this
-    /// string (and the algorithm here, which is public in this repo) can
-    /// mint valid-looking keys. Keep it out of version control in a real
-    /// release: inject at build time rather than committing a real value.
-    private static let sharedSecret = "REPLACE_ME_WITH_A_PRIVATE_SIGNING_SECRET"
+    /// Anyone with this string (and the algorithm here, which is public in
+    /// this repo) can mint valid-looking keys. This is a real generated
+    /// secret, not a placeholder -- but it's still committed to the repo,
+    /// which is fine for now while iterating solo. Before any public
+    /// release, move this out of source (inject at build time via an env
+    /// var / xcconfig) and rotate it, since anyone who's ever seen this
+    /// repo (e.g. if it goes public, or via git history) could mint keys.
+    private static let sharedSecret = "4dde8632e927735882bfe5410faf0c84adc061ee6eed2cc162e167c404978ff7"
 
     // Must match Tools/generate_license.swift's encoder exactly (both the
     // date strategy and the shared secret above), since that script signs

@@ -32,13 +32,22 @@ final class LicenseManager {
         }
     }
 
-    /// Tries Polar first (the real path once Polar's org ID is configured),
-    /// falling back to the offline HMAC format for local testing/demo keys
-    /// minted by Tools/generate_license.swift.
+    /// Tries Polar first (the real path now that Polar's org ID is
+    /// configured), falling back to the offline HMAC format for local
+    /// testing/demo keys minted by Tools/generate_license.swift.
+    ///
+    /// Falls through to the offline format on ANY Polar failure, not just
+    /// `.notConfigured` -- an offline-minted key isn't valid input to
+    /// Polar's API at all (it's not their key format), so Polar will
+    /// reject it outright (404/422, surfaced as `.network`), not report it
+    /// as "not valid". Treating that as fatal would make offline dev/test
+    /// keys stop working the moment Polar gets wired up, which is exactly
+    /// what happened here once `organizationId` was filled in.
     @discardableResult
     func redeem(key: String) async -> Bool {
         let trimmed = key.trimmingCharacters(in: .whitespacesAndNewlines)
         lastError = nil
+        var polarNetworkIssue = false
 
         do {
             let result = try await PolarService.validate(key: trimmed)
@@ -48,15 +57,21 @@ final class LicenseManager {
                 KeychainService.saveGenericString(trimmed, key: keychainKey)
                 return true
             }
+            // Polar recognized the key and says it's not valid (revoked/
+            // disabled) -- still worth trying the offline format below,
+            // since that's a different signal than "not a Polar key at all".
         } catch PolarService.PolarError.notConfigured {
-            // Fall through to offline format -- Polar isn't wired up yet.
+            // Polar isn't wired up -- offline format is the only path.
         } catch {
-            lastError = error.localizedDescription
-            return false
+            // Either this isn't a Polar-issued key at all, or a genuine
+            // network hiccup -- try the offline format before giving up.
+            polarNetworkIssue = true
         }
 
         guard let decoded = LicenseCodec.decode(trimmed) else {
-            lastError = "That license key isn't valid. Double-check it was copied in full."
+            lastError = polarNetworkIssue
+                ? "Couldn't verify this key -- check your connection, or double-check it was copied in full."
+                : "That license key isn't valid. Double-check it was copied in full."
             return false
         }
         if decoded.isExpired {

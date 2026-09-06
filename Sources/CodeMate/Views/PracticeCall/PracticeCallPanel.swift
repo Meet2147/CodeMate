@@ -40,6 +40,28 @@ struct PracticeCallPanel: View {
         .frame(width: 480, height: 580)
         .background(CMTheme.base(scheme))
         .sheet(isPresented: $showsPaywall) { PaywallView() }
+        .sheet(item: shareActivityBinding) { wrapped in
+            GroupActivitySharingView(activity: wrapped.activity) { _ in
+                call.pendingShareActivity = nil
+            }
+            .frame(width: 420, height: 500)
+        }
+    }
+
+    /// `pendingShareActivity` needs an `Identifiable` item for `.sheet(item:)`;
+    /// PracticeCallActivity has no stable id of its own, so this binding just
+    /// wraps it in one at the call site instead of making the model Identifiable
+    /// for a single use.
+    private var shareActivityBinding: Binding<IdentifiedActivity?> {
+        Binding(
+            get: { call.pendingShareActivity.map(IdentifiedActivity.init) },
+            set: { call.pendingShareActivity = $0?.activity }
+        )
+    }
+
+    private struct IdentifiedActivity: Identifiable {
+        let id = UUID()
+        let activity: PracticeCallActivity
     }
 
     private var header: some View {
@@ -63,7 +85,8 @@ struct PracticeCallPanel: View {
     private var idleContent: some View {
         VStack(alignment: .leading, spacing: 14) {
             VStack(alignment: .leading, spacing: 8) {
-                bullet("Starts (or joins) a FaceTime call -- macOS handles that prompt.")
+                bullet("Already on a FaceTime call? Starting attaches the session to it directly.")
+                bullet("Not on a call yet? You'll get a share sheet -- send the invite over Messages, and your friend tapping it starts the call and joins in one step.")
                 bullet("Once connected, each of you picks a problem for the *other* to solve.")
                 bullet("Turn your camera on/off or share your screen anytime from FaceTime's own controls.")
                 bullet("CodeMate only syncs which problem you're each solving and your progress -- never your raw code.")

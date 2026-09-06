@@ -14,7 +14,7 @@ import CryptoKit
 // If you change the format in Sources/CodeMate/Models/License.swift,
 // mirror the change here, and keep `sharedSecret` identical in both.
 
-let sharedSecret = "REPLACE_ME_WITH_A_PRIVATE_SIGNING_SECRET" // must match License.swift
+let sharedSecret = "4dde8632e927735882bfe5410faf0c84adc061ee6eed2cc162e167c404978ff7" // must match License.swift
 
 struct License: Codable {
     var tier: String

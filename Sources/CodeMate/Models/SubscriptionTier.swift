@@ -95,10 +95,10 @@ struct SubscriptionPlan: Identifiable {
 }
 
 enum SubscriptionCatalog {
-    static let proMonthly = SubscriptionPlan(tier: .pro, billing: .monthly, productID: "com.codemate.app.pro.monthly", placeholderPrice: "$9.99", purchaseURL: URL(string: "https://buy.codemate.app/pro-monthly"))
-    static let proYearly = SubscriptionPlan(tier: .pro, billing: .yearly, productID: "com.codemate.app.pro.yearly", placeholderPrice: "$79.99", purchaseURL: URL(string: "https://buy.codemate.app/pro-yearly"))
-    static let maxMonthly = SubscriptionPlan(tier: .max, billing: .monthly, productID: "com.codemate.app.max.monthly", placeholderPrice: "$19.99", purchaseURL: URL(string: "https://buy.codemate.app/max-monthly"))
-    static let maxYearly = SubscriptionPlan(tier: .max, billing: .yearly, productID: "com.codemate.app.max.yearly", placeholderPrice: "$149.99", purchaseURL: URL(string: "https://buy.codemate.app/max-yearly"))
+    static let proMonthly = SubscriptionPlan(tier: .pro, billing: .monthly, productID: "com.codemate.app.pro.monthly", placeholderPrice: "$9.99", purchaseURL: URL(string: "https://buy.polar.sh/polar_cl_Vf4UkG9b0urtdZwkpD9TH87zs3MTGj2a9Qooo0119Ub"))
+    static let proYearly = SubscriptionPlan(tier: .pro, billing: .yearly, productID: "com.codemate.app.pro.yearly", placeholderPrice: "$79.99", purchaseURL: URL(string: "https://buy.polar.sh/polar_cl_O1RrLjDSdl8qZeyxRG4lMzkIffZrFX1suQdyN0MAUAo"))
+    static let maxMonthly = SubscriptionPlan(tier: .max, billing: .monthly, productID: "com.codemate.app.max.monthly", placeholderPrice: "$19.99", purchaseURL: URL(string: "https://buy.polar.sh/polar_cl_WE1yiyOD2yDdj4Y5CdQQmBKmo85253byX5bRI49AeyC"))
+    static let maxYearly = SubscriptionPlan(tier: .max, billing: .yearly, productID: "com.codemate.app.max.yearly", placeholderPrice: "$149.99", purchaseURL: URL(string: "https://buy.polar.sh/polar_cl_WBxwK4zTFL4y0fMi7cB3jrCd272LGHJAMlsrG158TqE"))
 
     static let allPlans = [proMonthly, proYearly, maxMonthly, maxYearly]
     static let allProductIDs = allPlans.map(\.productID)

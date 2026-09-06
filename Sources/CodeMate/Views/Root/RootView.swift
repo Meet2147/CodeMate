@@ -1,6 +1,7 @@
 import SwiftUI
 
 enum AppSection: String, CaseIterable, Identifiable {
+    case roadmap = "Roadmap"
     case practice = "DSA Practice"
     case systemDesign = "LLD / HLD"
     case progress = "My Progress"
@@ -8,6 +9,7 @@ enum AppSection: String, CaseIterable, Identifiable {
     var id: String { rawValue }
     var symbol: String {
         switch self {
+        case .roadmap: return "map"
         case .practice: return "curlybraces"
         case .systemDesign: return "square.on.square.dashed"
         case .progress: return "chart.line.uptrend.xyaxis"
@@ -18,7 +20,10 @@ enum AppSection: String, CaseIterable, Identifiable {
 struct RootView: View {
     @Environment(\.colorScheme) private var scheme
     @Environment(AppPreferences.self) private var prefs
-    @State private var section: AppSection = .practice
+    // Roadmap first, not DSA Practice -- a novice's very first landing
+    // screen should say "start here" rather than dropping them into 102
+    // unordered problems with no sense of where to begin.
+    @State private var section: AppSection = .roadmap
     @State private var showsSettings = false
 
     // Sign in with Apple/Google (AuthGateView, AuthManager) is intentionally
@@ -71,6 +76,7 @@ struct RootView: View {
         } detail: {
             Group {
                 switch section {
+                case .roadmap: RoadmapHomeView()
                 case .practice: PracticeHomeView()
                 case .systemDesign: SystemDesignHomeView()
                 case .progress: ProgressHomeView()

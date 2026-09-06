@@ -335,8 +335,16 @@ struct ProblemWorkspaceView: View {
                     // problems without one yet, fall back to "ran without crashing"
                     // -- weaker, but the only signal available for those problems.
                     let solved = result.allTestsPassed ?? (result.exitCode == 0)
-                    if solved { persist { $0.status = .solved; $0.attempts += 1 } }
-                    else { persist { $0.attempts += 1 } }
+                    if solved {
+                        persist { $0.status = .solved; $0.attempts += 1 }
+                    } else if result.allTestsPassed != nil {
+                        // A harness actually ran and reported real failures --
+                        // revert a stale "solved" from an earlier passing run
+                        // rather than leaving it stuck green.
+                        persist { $0.status = .inProgress; $0.attempts += 1 }
+                    } else {
+                        persist { $0.attempts += 1 }
+                    }
                     ActivityTracker.recordRun(solved: solved, in: modelContext)
                     if call.isActive {
                         call.sendStatus(progress?.status ?? .inProgress, attempts: progress?.attempts ?? 0)

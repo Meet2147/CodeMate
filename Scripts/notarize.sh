@@ -10,10 +10,8 @@
 #   2. Create a "Developer ID Application" certificate (Certificates,
 #      Identifiers & Profiles > Certificates) and let it install into your
 #      login keychain.
-#   3. In Identifiers, register the app id "com.codemate.app" and enable
-#      the "Sign In with Apple" capability on it.
-#   4. Create an app-specific password for notarization:
-#      `xcrun notarytool store-credentials "codemate-notary"
+#   3. Create an app-specific password for notarization:
+#      `xcrun notarytool store-credentials "codemate"
 #         --apple-id "you@example.com" --team-id TEAMID --password "app-specific-password"`
 #      (generate the app-specific password at appleid.apple.com; TEAMID is
 #      on the Membership page of developer.apple.com)
@@ -41,7 +39,7 @@ rm -f "$ZIP"
 ditto -c -k --keepParent "$APP" "$ZIP"
 
 echo "Submitting to Apple's notary service (this can take a few minutes)..."
-xcrun notarytool submit "$ZIP" --keychain-profile "codemate-notary" --wait
+xcrun notarytool submit "$ZIP" --keychain-profile "codemate" --wait
 
 echo "Stapling the notarization ticket..."
 xcrun stapler staple "$APP"

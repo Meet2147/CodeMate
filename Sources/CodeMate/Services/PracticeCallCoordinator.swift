@@ -30,6 +30,14 @@ final class PracticeCallCoordinator {
     private(set) var problemAssignedToPartner: ProblemAssignment?
     private(set) var partnerStatus: PracticeStatusUpdate?
     var lastError: String?
+    /// Set when `start()` finds no FaceTime call already active. The view
+    /// watches this and presents `GroupActivitySharingController` for it --
+    /// that's the system share sheet (Messages/AirDrop/etc.) that lets you
+    /// send an invite to someone with no existing call; accepting it starts
+    /// the FaceTime call and joins the session together. This is the actual
+    /// "give them a key" mechanism SharePlay supports -- there's no public
+    /// API for an arbitrary join code independent of that invite.
+    var pendingShareActivity: PracticeCallActivity?
 
     private var groupSession: GroupSession<PracticeCallActivity>?
     private var messenger: GroupSessionMessenger?
@@ -63,15 +71,38 @@ final class PracticeCallCoordinator {
     }
 
     /// Starts (or joins, if a friend already started one) a practice
-    /// session. If there's no active FaceTime call yet, activation itself
-    /// prompts to start one -- that prompt is system UI, not something
-    /// CodeMate builds.
+    /// session.
+    ///
+    /// `prepareForActivation()` tells you which of two paths applies:
+    /// - `.activationPreferred`: you're already on a FaceTime call, so
+    ///   `activate()` just attaches the shared activity to it directly.
+    /// - `.activationDisabled`: no active call. Setting
+    ///   `pendingShareActivity` tells the view to present
+    ///   `GroupActivitySharingController`, the system share sheet for
+    ///   sending someone an invite (Messages, AirDrop, etc.) with no prior
+    ///   call -- accepting it starts the FaceTime call and joins the
+    ///   session in one step. That invite *is* the "key" a friend uses to
+    ///   join; SharePlay has no separate arbitrary join-code concept.
     func start() {
         Task {
-            do {
-                _ = try await PracticeCallActivity().activate()
-            } catch {
-                await MainActor.run { self.lastError = error.localizedDescription }
+            let activity = PracticeCallActivity()
+            switch await activity.prepareForActivation() {
+            case .activationPreferred:
+                do {
+                    _ = try await activity.activate()
+                } catch {
+                    await MainActor.run { self.lastError = error.localizedDescription }
+                }
+            case .activationDisabled:
+                await MainActor.run { self.pendingShareActivity = activity }
+            case .cancelled:
+                break
+            @unknown default:
+                do {
+                    _ = try await activity.activate()
+                } catch {
+                    await MainActor.run { self.lastError = error.localizedDescription }
+                }
             }
         }
     }
