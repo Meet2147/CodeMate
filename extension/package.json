@@ -1,0 +1,57 @@
+{
+  "name": "codemate",
+  "displayName": "CodeMate",
+  "description": "Pair programming sessions with GitHub auth, invites, and video room launch.",
+  "version": "0.1.0",
+  "publisher": "meetjethwa",
+  "engines": {
+    "vscode": "^1.88.0"
+  },
+  "categories": ["Other"],
+  "activationEvents": [
+    "onView:codemate.sidebar"
+  ],
+  "main": "./extension.js",
+  "contributes": {
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "codemate",
+          "title": "CodeMate",
+          "icon": "media/icon.svg"
+        }
+      ]
+    },
+    "views": {
+      "codemate": [
+        {
+          "id": "codemate.sidebar",
+          "name": "Pair Session",
+          "type": "webview"
+        }
+      ]
+    },
+    "commands": [
+      {
+        "command": "codemate.openPanel",
+        "title": "CodeMate: Open Panel"
+      }
+    ],
+    "configuration": {
+      "title": "CodeMate",
+      "properties": {
+        "codemate.apiBase": {
+          "type": "string",
+          "default": "http://localhost:8080",
+          "description": "Backend API base URL for CodeMate (for example ngrok URL)."
+        }
+      }
+    }
+  },
+  "scripts": {
+    "lint": "echo 'no lint configured'"
+  },
+  "devDependencies": {
+    "@types/vscode": "^1.88.0"
+  }
+}

@@ -1,0 +1,104 @@
+body {
+  font-family: var(--vscode-font-family);
+  color: var(--vscode-foreground);
+  margin: 0;
+}
+
+main {
+  padding: 12px;
+  display: grid;
+  gap: 8px;
+}
+
+h2 {
+  margin: 0 0 4px;
+}
+
+h3 {
+  margin: 0 0 6px;
+}
+
+input,
+button {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+input {
+  border: 1px solid var(--vscode-input-border);
+  background: var(--vscode-input-background);
+  color: var(--vscode-input-foreground);
+  border-radius: 6px;
+  padding: 8px;
+}
+
+button {
+  background: var(--vscode-button-background);
+  color: var(--vscode-button-foreground);
+  border: 0;
+  border-radius: 6px;
+  padding: 8px;
+  cursor: pointer;
+}
+
+button:hover {
+  background: var(--vscode-button-hoverBackground);
+}
+
+#authState,
+#status {
+  opacity: 0.9;
+  font-size: 12px;
+}
+
+.empty {
+  margin: 4px 0;
+  opacity: 0.8;
+  font-size: 12px;
+}
+
+.session-meta {
+  margin: 0 0 6px;
+  font-size: 12px;
+}
+
+.participant-list {
+  margin: 0;
+  padding-left: 16px;
+  font-size: 12px;
+}
+
+#inviteInbox {
+  display: grid;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.invite-item {
+  border: 1px solid var(--vscode-widget-border);
+  border-radius: 8px;
+  padding: 8px;
+}
+
+.invite-title {
+  margin: 0;
+  font-size: 12px;
+}
+
+.invite-meta {
+  margin: 4px 0 8px;
+  opacity: 0.8;
+  font-size: 11px;
+}
+
+.invite-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+}
+
+hr {
+  width: 100%;
+  border: 0;
+  border-top: 1px solid var(--vscode-widget-border);
+}

@@ -1,0 +1,249 @@
+@import url("https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap");
+
+:root {
+  --bg: #ffffff;
+  --card: #ffffff;
+  --line: #dbe7ff;
+  --ink: #0f1b33;
+  --muted: #5f7192;
+  --accent: #5c6cff;
+  --accent-2: #4aa5ff;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: "Manrope", sans-serif;
+  color: var(--ink);
+  background: var(--bg);
+}
+
+.page-bg {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 12% 8%, rgba(95, 123, 255, 0.12) 0%, rgba(95, 123, 255, 0) 33%),
+    radial-gradient(circle at 86% 2%, rgba(74, 165, 255, 0.1) 0%, rgba(74, 165, 255, 0) 34%),
+    linear-gradient(180deg, #fff 0%, #f6f9ff 100%);
+}
+
+.pricing-page {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 24px;
+  display: grid;
+  gap: 14px;
+  position: relative;
+  z-index: 1;
+}
+
+.glass {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  box-shadow: 0 14px 40px rgba(22, 48, 94, 0.08);
+}
+
+.topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+}
+
+.brand {
+  color: #0f1b33;
+  text-decoration: none;
+  font-family: "Plus Jakarta Sans", sans-serif;
+  font-weight: 800;
+  font-size: 1.35rem;
+  display: inline-flex;
+  align-items: center;
+}
+
+.brand img {
+  height: 34px;
+  width: auto;
+  display: block;
+}
+
+.top-actions {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.top-actions a,
+button {
+  border: 0;
+  border-radius: 12px;
+  padding: 10px 14px;
+  background: linear-gradient(128deg, var(--accent), var(--accent-2));
+  color: #fff;
+  font-weight: 800;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.top-actions a {
+  background: #f6faff;
+  border: 1px solid #ccdeff;
+  color: #284775;
+}
+
+.pricing-hero { padding: 20px; }
+
+.eyebrow {
+  margin: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  font-weight: 800;
+  font-size: 0.8rem;
+  color: #4e6ecb;
+}
+
+.pricing-hero h1 {
+  margin: 8px 0 10px;
+  font-family: "Plus Jakarta Sans", sans-serif;
+  font-size: clamp(1.9rem, 5vw, 3.4rem);
+}
+
+.pricing-hero p {
+  margin: 0;
+  color: var(--muted);
+  max-width: 780px;
+}
+
+#authStatus {
+  margin-top: 10px;
+  color: #335789;
+  font-weight: 700;
+}
+
+.controls {
+  padding: 14px;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.billing-cycle {
+  border: 1px solid #ccdeff;
+  border-radius: 13px;
+  padding: 10px 12px;
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.billing-cycle legend {
+  padding: 0 4px;
+  color: #36578e;
+  font-weight: 700;
+}
+
+.tier-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.tier-card {
+  padding: 18px;
+}
+
+.tier-card ul {
+  margin: 8px 0 12px;
+  padding-left: 18px;
+  color: #35527f;
+}
+
+.tier-card ul li {
+  margin-bottom: 7px;
+}
+
+.tier-card.featured {
+  border-color: #b8ceff;
+  box-shadow: 0 16px 38px rgba(90, 114, 255, 0.14);
+}
+
+.cards {
+  display: grid;
+  grid-template-columns: 310px;
+  justify-content: end;
+  gap: 12px;
+}
+
+.main-card,
+.side-card { padding: 18px; }
+
+.plan-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: baseline;
+}
+
+.main-card h2,
+.side-card h3 {
+  margin: 0;
+  font-family: "Plus Jakarta Sans", sans-serif;
+}
+
+.price {
+  margin: 8px 0;
+  font-size: 2.1rem;
+  font-family: "Plus Jakarta Sans", sans-serif;
+  font-weight: 800;
+}
+
+.local-price {
+  margin: 0 0 10px;
+  font-size: 0.9rem;
+  color: var(--muted);
+  font-weight: 700;
+}
+
+.checkout-note {
+  margin: 2px 0 0;
+  color: var(--muted);
+  font-size: 0.88rem;
+}
+
+.badge {
+  display: inline-flex;
+  margin: 0 0 6px;
+  padding: 4px 8px;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  background: #edf4ff;
+  border: 1px solid #d4e4ff;
+}
+
+.side-card p {
+  margin: 7px 0;
+  color: #35527f;
+}
+
+@media (max-width: 900px) {
+  .tier-grid { grid-template-columns: 1fr; }
+  .cards {
+    grid-template-columns: 1fr;
+    justify-content: stretch;
+  }
+}
+
+@media (max-width: 700px) {
+  .pricing-page { padding: 14px; }
+
+  .topbar {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+}
